@@ -1,0 +1,15 @@
+workoutName,exerciseName,setNum,reps,weight,notes
+"Pull 2","Pull up",1,8,30,""
+"Pull 2","Pull up",2,8,30,""
+"Pull 2","Pull up",3,6,30,""
+"Pull 2","ISO-Lateral Low Row",1,8,70,""
+"Pull 2","ISO-Lateral Low Row",2,6,70,""
+"Pull 2","ISO-Lateral Low Row",3,8,60,""
+"Pull 2","ISO-Lateral Low Row",4,7,60,""
+"Pull 2","Barbell Curl",1,12,50,""
+"Pull 2","Barbell Curl",2,10,50,""
+"Pull 2","Barbell Curl",3,7,50,""
+"Pull 2","Lat Pulldown",1,10,100,""
+"Pull 2","Lat Pulldown",2,8,100,""
+"Pull 2","Lat Pulldown",3,8,100,""
+

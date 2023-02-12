@@ -11,7 +11,7 @@ import SwiftUI
 struct WorkoutTracker_v2App: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            WorkoutTrackerTabView()
         }
     }
 }

@@ -1,0 +1,37 @@
+workoutName,exerciseName,numSets,minReps,maxReps
+"Pull 1","ISO-Lateral Low Row",4,6,8
+"Pull 1","Preacher Curl Machine",4,6,8
+"Pull 1","Cable Row",3,8,10
+"Pull 1","Biangular Lat Pulldown",3,6,8
+"Pull 1","Seated Hammer Curl",3,10,12
+"Pull 1","Straight Arm Pulldown",3,6,8
+"Pull 2","Pull up",3,6,8
+"Pull 2","ISO-Lateral Low Row",4,6,8
+"Pull 2","Bar Curl",3,8,12
+"Pull 2","Biangular Lat Pulldown",3,6,8
+"Pull 2","Hammer Curl In",3,8,10
+"Pull 2","Machine ISO Row",3,8,10
+"Pull 2","Beigan Cable Curl",3,10,12
+"Pull 2","Prone Press",3,12,15
+"Push 1","Bench Press",4,4,6
+"Push 1","Overhead Tricep Extension",3,6,8
+"Push 1","Reverse Fly",3,8,10
+"Push 1","Squeeze Press",3,6,8
+"Push 1","Tricep Pushdown",3,10,12
+"Push 1","Cable Front Raise",3,10,15
+"Push 1","Side Raise",3,6,8
+"Push 1","Inclined Bench Press",1,25,32
+"Push 2","Inclined Bench Press",4,4,6
+"Push 2","Tricep Cable Extension",3,6,8
+"Push 2","Dumbbell Shoulder Press",3,4,6
+"Push 2",Dip,3,10,12
+"Push 2","Tricep Pushdown",3,10,12
+"Push 2","Egyptian Lateral Raise",3,12,15
+"Legs","Squat",3,6,8
+"Legs","RDL",3,6,8
+"Legs","Seated Calf Raise",3,12,15
+"Legs","Bulgarian Split Squat",3,6,8
+"Legs","Hamstring Curl",3,8,10
+"Legs","Standing Calf Raise",3,8,10
+"Legs","Leg Press",3,6,8
+"Legs","Leg Extension",3,8,10

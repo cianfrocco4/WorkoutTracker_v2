@@ -1,0 +1,1 @@
+CREATE TABLE Exercise (name STRING PRIMARY KEY);
