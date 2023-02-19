@@ -60,10 +60,10 @@ struct ExerciseListDropDownView: View {
                     .fontWeight(.semibold)
                     .frame(width: 260, height: 30)
                     .foregroundColor(.primary)
-                    .background(Color.buttonBackground)
                     .cornerRadius(10)
             }
             .buttonStyle(.bordered)
+            .background(Color.buttonBackground)
         }
         .padding()
         .frame(width: .infinity, height: .infinity)
@@ -78,10 +78,12 @@ struct ExerciseListDropDownView: View {
 }
 
 struct ExerciseListView_Previews: PreviewProvider {
+    static let dbMgr = DbManager(db_path: "WorkoutTracker.sqlite")
     static var previews: some View {
         ExerciseListDropDownView(workout: MockData.sampleWorkout1,
                                  exercise: MockData.sampleExercises[0],
                                  repsArr: .constant(MockData.sampleRepsWeightArr),
                                  weightArr: .constant(MockData.sampleRepsWeightArr))
+            .environmentObject(dbMgr)
     }
 }

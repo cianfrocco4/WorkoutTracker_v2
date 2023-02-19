@@ -31,8 +31,10 @@ struct WorkoutView: View {
 }
 
 struct WorkoutView_Previews: PreviewProvider {
+    static let dbMgr = DbManager(db_path: "WorkoutTracker.sqlite")
     static var previews: some View {
         WorkoutView(isWorkoutSelected: .constant(true),
                     selectedWorkout: MockData.sampleWorkout1)
+            .environmentObject(dbMgr)
     }
 }

@@ -18,6 +18,13 @@ struct WorkoutTrackerTabView: View {
                     Text("Workouts")
                 }
                 .environmentObject(dbMgr)
+            
+            ExercisesListView()
+                .tabItem {
+                    Image(systemName: "dumbbell.fill")
+                    Text("Exercises")
+                }
+                .environmentObject(dbMgr)
         }
     }
 }

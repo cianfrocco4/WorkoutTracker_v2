@@ -35,6 +35,8 @@ struct WorkoutsView: View {
                                 }
                             }
                         }
+                        .padding([.leading, .trailing], 5)
+                        .padding([.top, .bottom], 5)
                     }
                 }
                 .navigationTitle("Workouts 💪")
@@ -54,8 +56,10 @@ struct WorkoutsView: View {
 }
 
 struct WorkoutsView_Previews: PreviewProvider {
+    static let dbMgr = DbManager(db_path: "WorkoutTracker.sqlite")
     static var previews: some View {
         WorkoutsView()
+            .environmentObject(dbMgr)
     }
 }
 

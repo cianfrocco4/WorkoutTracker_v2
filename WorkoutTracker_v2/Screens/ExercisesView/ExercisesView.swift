@@ -49,23 +49,25 @@ struct ExercisesView: View {
                             .imageScale(.small)
                             .foregroundColor(.black)
                     }
-                    .foregroundColor(.primary)
-                    .fontWeight(.semibold)
                 }
-                .buttonStyle(.bordered)
+                .foregroundColor(.primary)
                 .background(Color.buttonBackground)
+                .fontWeight(.semibold)
+                .buttonStyle(.bordered)
                 .cornerRadius(10)
                 
                 if viewModel.isExerciseSelected &&
                     viewModel.selectedExercise!.id == exercise.id {
-                    ExerciseListDropDownView(workout: workout,
-                                             exercise: viewModel.selectedExercise!,
-                                             repsArr: $viewModel.repsArr,
-                                             weightArr: $viewModel.weightArr)
-//                    ExerciseTableDropDownView(workout: workout,
+//                    ExerciseListDropDownView(workout: workout,
 //                                             exercise: viewModel.selectedExercise!,
 //                                             repsArr: $viewModel.repsArr,
 //                                             weightArr: $viewModel.weightArr)
+                    ExerciseDropDownTableView(workout: workout,
+                                              exercise: viewModel.selectedExercise!,
+                                              repsArr: $viewModel.repsArr,
+                                              weightArr: $viewModel.weightArr)
+                    .frame(width: 325,
+                           height: 300)
                 }
             }
         }
@@ -76,8 +78,10 @@ struct ExercisesView: View {
 }
 
 struct ExercisesView_Previews: PreviewProvider {
+    static let dbMgr = DbManager(db_path: "WorkoutTracker.sqlite")
     static var previews: some View {
         ExercisesView(workout: MockData.sampleWorkout1,
                       exercises: MockData.sampleExercises)
+            .environmentObject(dbMgr)
     }
 }

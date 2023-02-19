@@ -16,12 +16,15 @@
 		924F7B7F2983681A0041E641 /* databases in Resources */ = {isa = PBXBuildFile; fileRef = 924F7B7E2983681A0041E641 /* databases */; };
 		924F7B812983684D0041E641 /* DbManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 924F7B802983684D0041E641 /* DbManager.swift */; };
 		924F7B832983726D0041E641 /* WorkoutsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 924F7B822983726D0041E641 /* WorkoutsViewModel.swift */; };
+		9293F39129997A1D00D1EC29 /* ExercisesListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9293F39029997A1D00D1EC29 /* ExercisesListView.swift */; };
+		9293F39329997B0A00D1EC29 /* ExerciseListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9293F39229997B0A00D1EC29 /* ExerciseListViewModel.swift */; };
 		92B73F352978D50D004DDCE4 /* WorkoutTracker_v2App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B73F342978D50D004DDCE4 /* WorkoutTracker_v2App.swift */; };
 		92B73F372978D50D004DDCE4 /* WorkoutTrackerTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B73F362978D50D004DDCE4 /* WorkoutTrackerTabView.swift */; };
 		92B73F392978D510004DDCE4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 92B73F382978D510004DDCE4 /* Assets.xcassets */; };
 		92B73F3C2978D510004DDCE4 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 92B73F3B2978D510004DDCE4 /* Preview Assets.xcassets */; };
 		92B73F432978D585004DDCE4 /* WorkoutsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B73F422978D585004DDCE4 /* WorkoutsView.swift */; };
 		92B73F452978DE9C004DDCE4 /* XDismissButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B73F442978DE9C004DDCE4 /* XDismissButton.swift */; };
+		92CEBD5129A2B8140059B8FA /* ExerciseDropDownTableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92CEBD5029A2B8140059B8FA /* ExerciseDropDownTableView.swift */; };
 		92CEF2E42999550B00ED5DBA /* Color+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92CEF2E32999550B00ED5DBA /* Color+Ext.swift */; };
 /* End PBXBuildFile section */
 
@@ -35,6 +38,8 @@
 		924F7B7E2983681A0041E641 /* databases */ = {isa = PBXFileReference; lastKnownFileType = folder; path = databases; sourceTree = "<group>"; };
 		924F7B802983684D0041E641 /* DbManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DbManager.swift; sourceTree = "<group>"; };
 		924F7B822983726D0041E641 /* WorkoutsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutsViewModel.swift; sourceTree = "<group>"; };
+		9293F39029997A1D00D1EC29 /* ExercisesListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExercisesListView.swift; sourceTree = "<group>"; };
+		9293F39229997B0A00D1EC29 /* ExerciseListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseListViewModel.swift; sourceTree = "<group>"; };
 		92B73F312978D50D004DDCE4 /* WorkoutTracker_v2.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WorkoutTracker_v2.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		92B73F342978D50D004DDCE4 /* WorkoutTracker_v2App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutTracker_v2App.swift; sourceTree = "<group>"; };
 		92B73F362978D50D004DDCE4 /* WorkoutTrackerTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutTrackerTabView.swift; sourceTree = "<group>"; };
@@ -42,6 +47,7 @@
 		92B73F3B2978D510004DDCE4 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		92B73F422978D585004DDCE4 /* WorkoutsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutsView.swift; sourceTree = "<group>"; };
 		92B73F442978DE9C004DDCE4 /* XDismissButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = XDismissButton.swift; sourceTree = "<group>"; };
+		92CEBD5029A2B8140059B8FA /* ExerciseDropDownTableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseDropDownTableView.swift; sourceTree = "<group>"; };
 		92CEF2E32999550B00ED5DBA /* Color+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Ext.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -56,6 +62,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		9293F394299981E300D1EC29 /* ExerciseListView */ = {
+			isa = PBXGroup;
+			children = (
+				9293F39029997A1D00D1EC29 /* ExercisesListView.swift */,
+				9293F39229997B0A00D1EC29 /* ExerciseListViewModel.swift */,
+			);
+			path = ExerciseListView;
+			sourceTree = "<group>";
+		};
 		92B73F282978D50D004DDCE4 = {
 			isa = PBXGroup;
 			children = (
@@ -107,6 +122,7 @@
 			children = (
 				92B73F362978D50D004DDCE4 /* WorkoutTrackerTabView.swift */,
 				92CEF2E9299976C800ED5DBA /* ExerciseListDropDownView */,
+				9293F394299981E300D1EC29 /* ExerciseListView */,
 				92CEF2E82999769500ED5DBA /* ExercisesView */,
 				92CEF2E72999767F00ED5DBA /* WorkoutsView */,
 			);
@@ -137,6 +153,7 @@
 			children = (
 				9249FB8B298EE8BF008B8A10 /* ExerciseListDropDownView.swift */,
 				9249FB91298EFF17008B8A10 /* ExerciseDropDownViewModel.swift */,
+				92CEBD5029A2B8140059B8FA /* ExerciseDropDownTableView.swift */,
 			);
 			path = ExerciseListDropDownView;
 			sourceTree = "<group>";
@@ -238,8 +255,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9293F39329997B0A00D1EC29 /* ExerciseListViewModel.swift in Sources */,
 				9249FB92298EFF17008B8A10 /* ExerciseDropDownViewModel.swift in Sources */,
+				92CEBD5129A2B8140059B8FA /* ExerciseDropDownTableView.swift in Sources */,
 				92CEF2E42999550B00ED5DBA /* Color+Ext.swift in Sources */,
+				9293F39129997A1D00D1EC29 /* ExercisesListView.swift in Sources */,
 				9249FB8A298DFCFF008B8A10 /* TextBindingManager.swift in Sources */,
 				924F7B812983684D0041E641 /* DbManager.swift in Sources */,
 				924F7B7B297DFA230041E641 /* ExercisesView.swift in Sources */,

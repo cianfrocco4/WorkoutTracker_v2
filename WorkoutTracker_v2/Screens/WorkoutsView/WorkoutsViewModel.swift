@@ -19,10 +19,12 @@ final class WorkoutsViewModel: ObservableObject {
     }
     
     func getLastTimePerformed(workoutName : String) -> String {
-        let date = dbMgr!.getLastTimePerformed(workoutName: workoutName)
+        guard let mgr = dbMgr else { return "" }
+            
+        let date = mgr.getLastTimePerformed(workoutName: workoutName)
         if(date != nil) {
-            var df = DateFormatter()
-            df.dateFormat = "dd-MM-YYYY"
+            let df = DateFormatter()
+            df.dateFormat = "MM-dd-YYYY"
             let str = df.string(from: date!)
             return str
         }

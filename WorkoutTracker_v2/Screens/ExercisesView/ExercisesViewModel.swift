@@ -24,7 +24,7 @@ final class ExercisesViewModel: ObservableObject {
         if selectedExercise != nil &&
            dbMgr != nil {
             for set in 0..<selectedExercise!.sets {
-                if let result = self.dbMgr!.getLastTimePerformed(exerciseName: selectedExercise!.name, setNum: set + 1) {
+                if let result = self.dbMgr!.getLastTimePerformed(workoutName: nil, exerciseName: selectedExercise!.name, setNum: set + 1) {
                     if set < repsArr.count && set < weightArr.count {
                         repsArr[set].text = String(result.reps)
                         weightArr[set].text = String(result.weight)
