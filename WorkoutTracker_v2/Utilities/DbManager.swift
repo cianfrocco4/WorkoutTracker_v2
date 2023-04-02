@@ -10,6 +10,7 @@ import SQLite3
 
 class DbManager : ObservableObject {
     var db : OpaquePointer? = nil
+    var dbPath : String?
     var isDbOpen = false
     
     init(db_path : String) {
@@ -18,15 +19,14 @@ class DbManager : ObservableObject {
     }
     
     func openDatabase(db_path : String) {
-        let installNewDb = true
-        
         do {
+            self.dbPath = db_path
             let manager = FileManager.default
 
             let documentsURL = try manager.url(for: .documentDirectory, in: .allDomainsMask, appropriateFor: nil, create: false).appendingPathComponent(db_path)
 
             var rc = sqlite3_open_v2(documentsURL.path, &db, SQLITE_OPEN_READWRITE, nil)
-            if rc == SQLITE_CANTOPEN || installNewDb {
+            if rc == SQLITE_CANTOPEN {
                 let bundleURL = Bundle.main.url(forResource: "databases/WorkoutTracker", withExtension: "sqlite")!
                 
                 do {
@@ -51,6 +51,29 @@ class DbManager : ObservableObject {
         } catch {
             print("Failed to open database")
             print(error)
+        }
+    }
+    
+    func installNewDb() {
+        // close the existing db connection
+        sqlite3_close_v2(db)
+        db = nil
+
+        let manager = FileManager.default
+        let bundleURL = Bundle.main.url(forResource: "databases/WorkoutTracker", withExtension: "sqlite")!
+        do {
+            let documentsURL = try manager.url(for: .documentDirectory, in: .allDomainsMask, appropriateFor: nil, create: false).appendingPathComponent("WorkoutTracker.sqlite")
+
+            do {
+                try manager.removeItem(at: documentsURL)
+            } catch {
+                print("DB does not exist, cannot remove.: " + documentsURL.absoluteString)
+            }
+            
+            try manager.copyItem(at: bundleURL, to: documentsURL)
+            openDatabase(db_path: self.dbPath!) // assuming dbPath has been set before calling this func
+        } catch {
+            print("Could not find db URL")
         }
     }
     
@@ -113,11 +136,12 @@ class DbManager : ObservableObject {
         return workouts
     }
     
-    func saveWorkout(workoutName : String) {
+    func saveWorkout(workoutName : String,
+                     notes: String) {
         if isDbOpen {
             print("Saving workout to database: \(workoutName)")
             let queryStr = "INSERT INTO WorkoutHistory ( workoutName, notes, date ) VALUES ( '" +
-                            workoutName + "', \'\'" + ", date('now', 'start of day', 'localtime') )"
+                            workoutName + "', \'" + notes + "\'" + ", date('now', 'localtime') )"
             var stmt: OpaquePointer?
             if sqlite3_prepare_v2(db, queryStr, -1, &stmt, nil) != SQLITE_OK {
                 print("ERROR preparing statement: " + queryStr)
@@ -139,10 +163,11 @@ class DbManager : ObservableObject {
                       exerciseName : String,
                       set : Int,
                       reps : Int,
-                      weight : Float) {
+                      weight : Float,
+                      notes: String) {
         if isDbOpen {
             // Make sure there is workout entry for today's date
-            var queryStr = "SELECT workoutName FROM WorkoutHistory WHERE workoutName = '" + workoutName + "' AND date = date('now', 'start of day', 'localtime')"
+            var queryStr = "SELECT workoutName FROM WorkoutHistory WHERE workoutName = '" + workoutName + "' AND date = date('now', 'localtime')"
             var stmt: OpaquePointer?
 
             //preparing the query
@@ -154,15 +179,16 @@ class DbManager : ObservableObject {
             
             if(sqlite3_step(stmt) == SQLITE_ROW) {
                 // Check if exercise exists already for this date and set
-                let result = getLastTimePerformed(workoutName: workoutName, exerciseName: exerciseName, setNum: set+1)
+                let result = getLastTimePerformed(workoutName: workoutName, exerciseName: exerciseName, setNum: set)
                 
                 let (currDay, currMonth, currYear) = getDayMonthYear(date: Date())
                 
                 if(result != nil && getDayMonthYear(date: result!.date) == (currDay, currMonth, currYear)) {
-                    queryStr = "UPDATE ExerciseHistory set reps = " + String(reps) + ", weight = " + String(weight) + " WHERE workoutName = '" + workoutName + "' AND exerciseName = '" + exerciseName + "' AND setNum = " + String(set + 1) + " AND date = " + currYear + "-" + currMonth + "-" + currDay
+                    queryStr = "UPDATE ExerciseHistory set reps = " + String(reps) + ", weight = " + String(weight) + " WHERE workoutName = '" + workoutName + "' AND exerciseName = '" + exerciseName + "' AND setNum = " + String(set) + " AND notes = '" +
+                        notes + "' AND date = date('now', 'localtime')"
                 }
                 else {
-                    queryStr = "INSERT INTO ExerciseHistory ( workoutName, exerciseName, setNum, reps, weight, notes, date ) VALUES ( '" + workoutName + "', '" + exerciseName + "', " + String(set+1) + ", " + String(reps) + ", " + String(weight) + ", '', date('now', 'start of day', 'localtime'))"
+                    queryStr = "INSERT INTO ExerciseHistory ( workoutName, exerciseName, setNum, reps, weight, notes, date ) VALUES ( '" + workoutName + "', '" + exerciseName + "', " + String(set) + ", " + String(reps) + ", " + String(weight) + ", '" + notes  + "' , date('now', 'localtime'))"
                 }
                     
                 if sqlite3_prepare_v2(db, queryStr, -1, &stmt, nil) != SQLITE_OK {
@@ -186,9 +212,33 @@ class DbManager : ObservableObject {
         }
     }
     
+    func unsaveExercise(workoutName : String,
+                        exerciseName : String,
+                        set : Int) {
+        if isDbOpen {
+            let queryStr = "DELETE FROM ExerciseHistory WHERE workoutName = '" + workoutName + "' AND " +
+                           "exerciseName = '" + exerciseName + "' AND " +
+                           "setNum = " + String(set) + " AND " +
+                           "date = date('now', 'localtime')"
+            var stmt: OpaquePointer?
+            
+            if sqlite3_prepare_v2(db, queryStr, -1, &stmt, nil) != SQLITE_OK {
+                print("ERROR preparing statement: " + queryStr)
+                return
+            }
+            
+            if sqlite3_step(stmt) != SQLITE_DONE {
+                print("ERROR could not execute: " + queryStr)
+                return
+            }
+            
+            print("Unsaved exercise!")
+        }
+    }
+    
     func getLastTimePerformed( workoutName : String?,
                                exerciseName: String,
-                               setNum: Int) -> (reps : Int, weight: Int, date : Date)? {
+                               setNum: Int) -> (reps : Int, weight: Int, notes: String, date : Date)? {
         if isDbOpen {
             var queryStr = "SELECT reps, weight, ExerciseHistory.notes, ExerciseHistory.date FROM WorkoutHistory LEFT JOIN ExerciseHistory ON WorkoutHistory.workoutName = ExerciseHistory.workoutName WHERE exerciseName = '" + exerciseName + "' AND setNum = " + String(setNum)
             if workoutName != nil {
@@ -207,14 +257,14 @@ class DbManager : ObservableObject {
             if(sqlite3_step(stmt) == SQLITE_ROW) {
                 let reps = Int(sqlite3_column_int(stmt, 0))
                 let weight = Int(sqlite3_column_int(stmt, 1))
-//                let notes = String(cString: sqlite3_column_text(stmt, 2))
+                let notes = String(cString: sqlite3_column_text(stmt, 2))
                 let dateStr = String(cString: sqlite3_column_text(stmt, 3))
                 
                 let df = DateFormatter()
                 df.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
                 df.dateFormat = "yyyy-MM-dd"
                 let date = df.date(from: dateStr)!
-                return (reps, weight, date)
+                return (reps, weight, notes, date)
             }
             
             sqlite3_finalize(stmt)
@@ -291,7 +341,7 @@ class DbManager : ObservableObject {
         var weight : Float?
         if(isDbOpen) {
             let queryStr = "SELECT weight FROM ExerciseHistory WHERE exerciseName = '" +
-                            exerciseName + "' AND setNum = " + String(set) + " ORDER BY date ASC LIMIT 1"
+                            exerciseName + "' AND setNum = " + String(set) + " ORDER BY date DESC LIMIT 1"
             
             var stmt: OpaquePointer?
             
@@ -309,5 +359,285 @@ class DbManager : ObservableObject {
         }
         
         return weight
+    }
+    
+    func addExerciseToWorkout(workout: Workout, exercise: Exercise) {
+        if(isDbOpen) {
+            let queryStr = "INSERT INTO WorkoutDetails (workoutName, exerciseName, numSets, minReps, maxReps) VALUES ('" +
+                workout.name + "', '" + exercise.name + "', '" + String(exercise.sets) + "', '" + String(exercise.minReps) +
+                "', '" + String(exercise.maxReps) + "')"
+            
+            var stmt: OpaquePointer?
+
+            if sqlite3_prepare_v2(db, queryStr, -1, &stmt, nil) != SQLITE_OK{
+                let errmsg = String(cString: sqlite3_errmsg(db)!)
+                print("error preparing: \(errmsg)")
+            }
+            else {
+                if sqlite3_step(stmt) != SQLITE_DONE {
+                    print("ERROR could not execute: " + queryStr)
+                    return
+                }
+                
+                print("Added exercise!")
+                
+                sqlite3_finalize(stmt)
+            }
+        }
+    }
+    
+    func getPrevDate(workoutName : String,
+                     exerciseName : String,
+                     set : Int) -> Date? {
+        let val = getLastTimePerformed(workoutName: workoutName,
+                                       exerciseName: exerciseName,
+                                       setNum: set)
+        if val != nil {
+            return val!.date
+        }
+        else {
+            return nil
+        }
+    }
+    
+    func addNewExercise(name : String) {
+        if(isDbOpen) {
+            let queryStr = "INSERT INTO Exercise (name) VALUES ('" + name + "')"
+            
+            var stmt: OpaquePointer?
+
+            if sqlite3_prepare_v2(db, queryStr, -1, &stmt, nil) != SQLITE_OK{
+                let errmsg = String(cString: sqlite3_errmsg(db)!)
+                print("error preparing: \(errmsg)")
+            }
+            else {
+                if sqlite3_step(stmt) != SQLITE_DONE {
+                    print("ERROR could not execute: " + queryStr)
+                    return
+                }
+                
+                print("Added new exercise!")
+                
+                sqlite3_finalize(stmt)
+            }
+        }
+    }
+    
+    func addNewWorkout(name : String) {
+        if(isDbOpen) {
+            let queryStr = "INSERT INTO Workout (name) VALUES ('" + name + "')"
+            
+            var stmt: OpaquePointer?
+
+            if sqlite3_prepare_v2(db, queryStr, -1, &stmt, nil) != SQLITE_OK{
+                let errmsg = String(cString: sqlite3_errmsg(db)!)
+                print("error preparing: \(errmsg)")
+            }
+            else {
+                if sqlite3_step(stmt) != SQLITE_DONE {
+                    print("ERROR could not execute: " + queryStr)
+                    return
+                }
+                
+                print("Added new workout!")
+                
+                sqlite3_finalize(stmt)
+            }
+        }
+    }
+    
+    func removeWorkout(workoutName: String) {
+        if (isDbOpen) {
+            var queryStr = "DELETE FROM WorkoutDetails WHERE workoutName = '" + workoutName + "'"
+            var stmt: OpaquePointer?
+
+            if sqlite3_prepare_v2(db, queryStr, -1, &stmt, nil) != SQLITE_OK {
+                let errmsg = String(cString: sqlite3_errmsg(db)!)
+                print("error preparing: \(errmsg)")
+            }
+            else {
+                if sqlite3_step(stmt) != SQLITE_DONE {
+                    print("ERROR could not execute: " + queryStr)
+                    return
+                }
+                
+                print("Removed workout from WorkoutDetails table")
+                
+                sqlite3_finalize(stmt)
+            }
+            
+            // Remove from Workout table
+            
+            queryStr = "DELETE FROM Workout WHERE name = '" + workoutName + "'"
+            
+            if sqlite3_prepare_v2(db, queryStr, -1, &stmt, nil) != SQLITE_OK {
+                let errmsg = String(cString: sqlite3_errmsg(db)!)
+                print("error preparing: \(errmsg)")
+            }
+            else {
+                if sqlite3_step(stmt) != SQLITE_DONE {
+                    print("ERROR could not execute: " + queryStr)
+                    return
+                }
+                
+                print("Removed workout from Workout table")
+                
+                sqlite3_finalize(stmt)
+            }
+        }
+    }
+    
+    func getSwiftDateFromSqliteDate(dateStr : String) -> Date {
+        var df = DateFormatter()
+        df.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
+        df.dateFormat = "yyyy-MM-dd"
+        let date = df.date(from: dateStr)!
+        return date
+    }
+    
+    func isSameDay(date1: Date, date2: Date) -> Bool {
+        return Calendar.current.isDate(date1, equalTo: date2, toGranularity: .day)
+    }
+    
+    func getLastDaysPerformed(days: Int) -> [WorkoutHistory] {
+        var workouts : [WorkoutHistory] = []
+        var id = 0
+        for day in stride(from: days-1, to: -1, by: -1) {
+            let temp = Date.now
+            let date = Date.now.addingTimeInterval(TimeInterval(-86400 * day))
+            workouts.append(WorkoutHistory(id: id, workout: nil, date: date))
+            id+=1
+        }
+        if isDbOpen {
+            let queryStr = "SELECT workoutName, date FROM WorkoutHistory WHERE date BETWEEN date('now', 'localtime', '-" + String(days) + " day') AND date('now', 'localtime')"
+            var stmt: OpaquePointer?
+
+            if sqlite3_prepare_v2(db, queryStr, -1, &stmt, nil) != SQLITE_OK{
+                let errmsg = String(cString: sqlite3_errmsg(db)!)
+                print("error preparing: \(errmsg)")
+                return workouts
+            }
+            
+            while(sqlite3_step(stmt) == SQLITE_ROW) {
+                let dateStr = String(cString: sqlite3_column_text(stmt, 1))
+                let date = getSwiftDateFromSqliteDate(dateStr: dateStr)
+
+                for idx in workouts.indices {
+                    if isSameDay(date1: workouts[idx].date, date2: date) {
+                        workouts[idx].workout = Workout(id: workouts[idx].id,
+                                                        name: String(cString: sqlite3_column_text(stmt, 0)),
+                                                        exercises: []) // TODO exercises
+                    }
+                }
+            }
+            
+            sqlite3_finalize(stmt)
+        }
+        
+        return workouts
+    }
+    
+    func exportDb() -> String? {
+        if isDbOpen {
+            let fileMgr = FileManager.default
+            guard let lcDbPath = self.dbPath else { return nil }
+            
+            do {
+                let documentsURL = try fileMgr.url(for: .documentDirectory, in: .allDomainsMask, appropriateFor: nil, create: false).appendingPathComponent(lcDbPath)
+                let backupURL = try fileMgr.url(for: .documentDirectory, in: .allDomainsMask, appropriateFor: nil, create: false).appendingPathComponent(lcDbPath + ".bak")
+                
+                if fileMgr.fileExists(atPath: backupURL.absoluteString) {
+                    try fileMgr.removeItem(at: backupURL)
+                }
+                
+                try fileMgr.copyItem(at: documentsURL, to: backupURL)
+                print("Backed up Database success! Location: " + backupURL.absoluteString)
+                return backupURL.absoluteString
+            } catch {
+                print(error.localizedDescription )
+                return nil
+            }
+        }
+        
+        return nil
+    }
+    
+    func getAllHistoricalWorkoutNames() -> [String] {
+        var workouts : [String] = []
+        
+        if(isDbOpen) {
+            let queryStr = "SELECT DISTINCT workoutName FROM WorkoutHistory ORDER BY name ASC"
+            var stmt: OpaquePointer?
+            
+            if sqlite3_prepare_v2(db, queryStr, -1, &stmt, nil) != SQLITE_OK{
+                let errmsg = String(cString: sqlite3_errmsg(db)!)
+                print("error preparing: \(errmsg)")
+            }
+            else {
+                while(sqlite3_step(stmt) == SQLITE_ROW) {
+                    let workoutName = String(cString: sqlite3_column_text(stmt, 0))
+                    workouts.append(workoutName)
+                }
+                
+                sqlite3_finalize(stmt)
+            }
+        }
+        
+        return workouts
+    }
+    
+    func getExercisesForHistoricalWorkout(workoutName : String) -> [Exercise] {
+        return []
+    }
+    
+    func getHistoricalExerciseData(exerciseName : String) -> [ExerciseHistoryData] {
+        var exercises : [ExerciseHistoryData] = []
+        if(isDbOpen) {
+            let queryStr = "SELECT workoutName, exerciseName, setNum, reps, weight, notes, date FROM ExerciseHistory WHERE exerciseName = '" + exerciseName + "' ORDER by date DESC"
+            var stmt: OpaquePointer?
+            
+            if sqlite3_prepare_v2(db, queryStr, -1, &stmt, nil) != SQLITE_OK{
+                let errmsg = String(cString: sqlite3_errmsg(db)!)
+                print("error preparing: \(errmsg)")
+            }
+            else {
+                while(sqlite3_step(stmt) == SQLITE_ROW) {
+                    let workoutName  = String(cString: sqlite3_column_text(stmt, 0))
+                    let exerciseName = String(cString: sqlite3_column_text(stmt, 1))
+                    let setNum       = Int(sqlite3_column_int(stmt, 2))
+                    let reps         = Int(sqlite3_column_int(stmt, 3))
+                    let weight       = Float(sqlite3_column_double(stmt, 4))
+                    let notes        = String(cString: sqlite3_column_text(stmt, 5))
+                    let dateStr      = String(cString: sqlite3_column_text(stmt, 6))
+                    
+                    let date = getSwiftDateFromSqliteDate(dateStr: dateStr)
+                    
+                    if exercises.contains(where: { $0.workoutName == workoutName &&
+                                                   $0.exerciseName == exerciseName &&
+                                                   isSameDay(date1: $0.date, date2: date) }) {
+                        let idx = exercises.firstIndex(where: { $0.workoutName == workoutName &&
+                                                                $0.exerciseName == exerciseName &&
+                                                                isSameDay(date1: $0.date, date2: date) })
+                        exercises[idx!].reps.append(reps)
+                        exercises[idx!].weights.append(weight)
+                    }
+                    else {
+                        let data = ExerciseHistoryData(id: exercises.count == 0 ? 0 : exercises[exercises.count - 1].id + 1,
+                                                       workoutName: workoutName,
+                                                       exerciseName: exerciseName,
+                                                       date: date,
+                                                       weights: Array([weight]),
+                                                       reps: Array([reps]),
+                                                       notes: notes)
+                        exercises.append(data)
+                    }
+
+                }
+                
+                sqlite3_finalize(stmt)
+            }
+        }
+        
+        return exercises
     }
 }

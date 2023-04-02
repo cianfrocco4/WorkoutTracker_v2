@@ -9,40 +9,64 @@ import Foundation
 
 final class ExercisesViewModel: ObservableObject {
     var dbMgr : DbManager?
+    private var workout : Workout?
     
     @Published var isExerciseSelected : Bool = false
     @Published var repsArr : [TextBindingManager] = []
     @Published var weightArr : [TextBindingManager] = []
     @Published var selectedExercise : Exercise?
+    @Published var exerciseEntries : [ExerciseEntry] = []
+    @Published var isShwoingAddNewExer = false
+    @Published var isShowingSwapExer = false
+    @Published var swapIdx : Int?
+    @Published var notes : String = ""
     
-    func setup(_ dbMgr : DbManager) {
+    func setup(_ dbMgr : DbManager,
+               workout: Workout) {
         self.dbMgr = dbMgr
+        self.workout = workout
         setRepsAndWeight()
     }
     
     func setRepsAndWeight() {
+        notes = ""
+        
         if selectedExercise != nil &&
            dbMgr != nil {
             for set in 0..<selectedExercise!.sets {
                 if let result = self.dbMgr!.getLastTimePerformed(workoutName: nil, exerciseName: selectedExercise!.name, setNum: set + 1) {
+                    if result.notes != "" {
+                        notes = result.notes
+                    }
+                    
                     if set < repsArr.count && set < weightArr.count {
                         repsArr[set].text = String(result.reps)
                         weightArr[set].text = String(result.weight)
+                        
+                        exerciseEntries[set].wgtLbs = Float(result.weight)
+                        exerciseEntries[set].reps = result.reps
                     }
                     else {
                         repsArr[set].text = ""
                         weightArr[set].text = ""
+                        
+                        exerciseEntries[set].wgtLbs = 0
+                        exerciseEntries[set].reps = 0
                     }
                 }
                 else {
                     repsArr[set].text = ""
                     weightArr[set].text = ""
+                    
+                    exerciseEntries[set].wgtLbs = 0
+                    exerciseEntries[set].reps = 0
                 }
             }
         }
     }
     
     func selectExercise(exercise : Exercise) {
+        exerciseEntries.removeAll()
         
         if selectedExercise == nil ||
             exercise.name == selectedExercise!.name {
@@ -56,14 +80,58 @@ final class ExercisesViewModel: ObservableObject {
         
         selectedExercise = exercise
         
-        let len = repsArr.count
+        let len = exerciseEntries.count //repsArr.count
         if(len < selectedExercise!.sets) {
-            for _ in len-1..<selectedExercise!.sets {
+            for set in 0..<selectedExercise!.sets {
                 repsArr.append(TextBindingManager(limit: 2))
                 weightArr.append(TextBindingManager(limit: 3))
+                
+                let completedToday = getPrevDateToday(exerciseName: selectedExercise!.name,
+                                                      set: set+1)
+                
+                
+                exerciseEntries.append(ExerciseEntry(set: set+1,
+                                                     prevWgtLbs: (selectedExercise != nil) ? getPrev(exerciseName: selectedExercise!.name, set: set+1) : nil,
+                                                     reps: 0,
+                                                     saved: completedToday))
             }
         }
         
         setRepsAndWeight()
+    }
+    
+    func getPrev(exerciseName : String,
+                 set : Int) -> Float? {
+        guard let mgr = dbMgr else { return nil }
+        
+        return mgr.getPrevWeight(exerciseName: exerciseName,
+                                 set: set)
+    }
+    
+    func getPrevDateToday(exerciseName : String,
+                     set : Int) -> Bool {
+        guard let mgr = dbMgr else { return false }
+
+        guard let wkout = workout else { return false }
+        
+        let date =  mgr.getPrevDate(workoutName: wkout.name,
+                                    exerciseName: exerciseName,
+                                    set: set)
+        
+        if date != nil {
+            let dbComponents = Calendar.current.dateComponents([.day, .year, .month], from: date!)
+            let currComponents = Calendar.current.dateComponents([.day, .year, .month], from: Date.now)
+            
+            return dbComponents.year == currComponents.year &&
+                    dbComponents.month == currComponents.month &&
+                    dbComponents.day == currComponents.day
+        }
+        else {
+            return false
+        }
+    }
+    
+    func addNewExerciseClicked() {
+        isShwoingAddNewExer = !isShwoingAddNewExer
     }
 }

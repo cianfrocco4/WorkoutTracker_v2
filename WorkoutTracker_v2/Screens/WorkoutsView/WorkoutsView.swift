@@ -16,6 +16,8 @@ struct WorkoutsView: View {
         ZStack {
             NavigationView {
                 VStack {
+                    WorkoutHistoryView(workouts: $viewModel.workoutHistory)
+                        .padding(.top)
                     List {
                         ForEach(viewModel.workouts) { workout in
                             Button {
@@ -34,19 +36,51 @@ struct WorkoutsView: View {
                                     .opacity(0.6)
                                 }
                             }
+                            .swipeActions {
+                                Button("Remove") {                                    
+                                    print("Remove Workout: " + workout.name)
+                                    viewModel.removeWorkout(workoutName: workout.name)
+                                }
+                                .tint(.red)
+                            }
                         }
                         .padding([.leading, .trailing], 5)
                         .padding([.top, .bottom], 5)
                     }
+                    
+                    Button {
+                        viewModel.addNewWorkoutClicked()
+                    } label: {
+                        Text("Add new workout")
+                            .multilineTextAlignment(.center)
+                            .font(.body)
+                            .fontWeight(.semibold)
+                            .cornerRadius(10)
+                    }
+                    .padding()
+                    .buttonStyle(.borderedProminent)
+                    .tint(Color.brandPrimary)
                 }
                 .navigationTitle("Workouts 💪")
             }
-            .blur(radius: viewModel.isWorkoutSelected ? 30 : 0)
-            .disabled(viewModel.isWorkoutSelected)
+            .blur(radius: (viewModel.isWorkoutSelected ||
+                           viewModel.isShowingAddNewWorkout) ? 20 : 0)
+            .disabled(viewModel.isWorkoutSelected ||
+                      viewModel.isShowingAddNewWorkout)
             
             if viewModel.isWorkoutSelected {
                 WorkoutView(isWorkoutSelected: $viewModel.isWorkoutSelected,
                             selectedWorkout: viewModel.selectedWorkout!)
+                .onDisappear(perform: {
+                    viewModel.refreshWorkouts()
+                })
+            }
+            
+            if viewModel.isShowingAddNewWorkout {
+                NewWorkoutView(isShowingNewWorkout: $viewModel.isShowingAddNewWorkout)
+                    .onDisappear(perform: {
+                        viewModel.refreshWorkouts()
+                    })
             }
         }
         .onAppear {
@@ -61,40 +95,4 @@ struct WorkoutsView_Previews: PreviewProvider {
         WorkoutsView()
             .environmentObject(dbMgr)
     }
-}
-
-struct Workout: Decodable, Identifiable {
-    var id        : Int
-    var name      : String
-    var exercises : [Exercise]
-}
-
-struct Exercise: Decodable, Identifiable {
-    var id      : Int
-    var name    : String
-    var sets    : Int
-    var minReps : Int
-    var maxReps : Int
-    var weight  : Int
-}
-
-struct ExerciseData : Identifiable {
-    var id   : Int
-    var set  : String
-    var reps : TextBindingManager
-    var wgt  : TextBindingManager
-}
-
-struct MockData {
-    static let sampleExercises = [
-        Exercise(id: 0, name: "Pull ups", sets: 3, minReps: 8, maxReps: 10, weight: 30),
-        Exercise(id: 1, name: "Barbell Curls", sets: 3, minReps: 10, maxReps: 12, weight: 50),
-        Exercise(id: 2, name: "Lat Pulldowns", sets: 3, minReps: 10, maxReps: 12, weight: 120)
-    ]
-    
-    static let sampleWorkout1 = Workout(id: 0, name: "Pull 1", exercises: sampleExercises)
-    static let sampleWorkout2 = Workout(id: 1, name: "Pull 2", exercises: sampleExercises)
-    
-    static let sampleRepsWeightArr = Array(repeating: TextBindingManager(limit: 3),
-                                           count: 3) 
 }

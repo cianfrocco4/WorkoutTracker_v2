@@ -9,7 +9,6 @@ import Foundation
 
 final class ExerciseDropDownViewModel: ObservableObject {
     var dbMgr : DbManager?
-    @Published var entries : [ExerciseEntry] = []
     
     func setup(_ dbMgr : DbManager) {
         self.dbMgr = dbMgr
@@ -19,44 +18,63 @@ final class ExerciseDropDownViewModel: ObservableObject {
               exercise: Exercise,
               repsArr: [TextBindingManager],
               weightArr: [TextBindingManager]) {
-        dbMgr!.saveWorkout(workoutName: workout.name)
+        dbMgr!.saveWorkout(workoutName: workout.name,
+                           notes: "")
 
         for set in 0..<exercise.sets {
             dbMgr!.saveExercise(workoutName: workout.name,
                                exerciseName: exercise.name,
                                set: set,
                                reps: Int(repsArr[set].text) ?? 0,
-                               weight: Float(weightArr[set].text) ?? 0.0)
+                                weight: Float(weightArr[set].text) ?? 0.0,
+                                notes: "")
         }
     }
     
     func save(workout: Workout,
               exercise: Exercise,
-              set : Int) {
+              set : Int,
+              entries : [ExerciseEntry],
+              notes: String) {
         guard let mgr = dbMgr else { return }
                 
-        if entries.indices.contains(set) {
-            guard let wgt = entries[set].wgtLbs else { return }
+        if entries.indices.contains(set-1) {
+            guard let wgt = entries[set-1].wgtLbs else { return }
 
-            mgr.saveWorkout(workoutName: workout.name)
+            mgr.saveWorkout(workoutName: workout.name,
+                            notes: "")
             
             mgr.saveExercise(workoutName: workout.name,
                              exerciseName: exercise.name,
                              set: set,
-                             reps: entries[set].reps,
-                             weight: wgt)
+                             reps: entries[set-1].reps,
+                             weight: wgt,
+                             notes: notes)
             
-            entries[set].saved = !entries[set].saved
         } else {
             print("ERROR: invalid set index: " + String(set))
         }
     }
     
-    func saveAll(workout : Workout,
-                 exercise : Exercise) {
+    func unsave(workout: Workout,
+                exercise: Exercise,
+                set : Int) {
         guard let mgr = dbMgr else { return }
         
-        mgr.saveWorkout(workoutName: workout.name)
+        mgr.unsaveExercise(workoutName: workout.name,
+                           exerciseName: exercise.name,
+                           set: set)
+        
+    }
+    
+    func saveAll(workout : Workout,
+                 exercise : Exercise,
+                 entries : [ExerciseEntry],
+                 exerciseNotes: String) {
+        guard let mgr = dbMgr else { return }
+        
+        mgr.saveWorkout(workoutName: workout.name,
+                        notes: "")
 
         for set in 0..<entries.count {
             guard let wgt = entries[set].wgtLbs else { continue }
@@ -65,10 +83,8 @@ final class ExerciseDropDownViewModel: ObservableObject {
                              exerciseName: exercise.name,
                              set: entries[set].set,
                              reps: entries[set].reps,
-                             weight: wgt)
-            
-            // Update all entries to be saved
-            entries[set].saved = true
+                             weight: wgt,
+                             notes: exerciseNotes)
         }
     }
     

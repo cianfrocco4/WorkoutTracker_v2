@@ -14,4 +14,11 @@ final class ExerciseListViewModel: ObservableObject {
         self.dbMgr = dbMgr
         self.exercises = self.dbMgr!.getExercises()
     }
+    
+    func addNewExercise(name : String) {
+        guard let mgr = dbMgr else { return }
+
+        mgr.addNewExercise(name: name)
+        exercises = mgr.getExercises()
+    }
 }

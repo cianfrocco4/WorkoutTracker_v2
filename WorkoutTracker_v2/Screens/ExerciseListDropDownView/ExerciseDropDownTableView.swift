@@ -11,13 +11,15 @@ struct ExerciseDropDownTableView: View {
     
     @State var workout  : Workout
     @State var exercise : Exercise
-    
+        
     @StateObject private var viewModel = ExerciseDropDownViewModel()
     
     @EnvironmentObject var dbMgr : DbManager
     
     @Binding var repsArr : [TextBindingManager]
     @Binding var weightArr : [TextBindingManager]
+    @Binding var entries : [ExerciseEntry]
+    @Binding var notes : String
     
     let formatter: NumberFormatter = {
         let formatter = NumberFormatter()
@@ -28,13 +30,16 @@ struct ExerciseDropDownTableView: View {
     var body: some View {
         VStack {
             VStack {
+                TextField("Notes", text: $notes)
+                    .textFieldStyle(.roundedBorder)
+                
                 HStack {
                     // set
                     VStack {
                         Text("Set")
                             .fontWeight(.semibold)
                         Divider()
-                        ForEach($viewModel.entries, id: \.self) { $entry in
+                        ForEach($entries, id: \.self) { $entry in
                             Text(entry.setString)
                         }
                         .frame(height: 34)
@@ -45,7 +50,7 @@ struct ExerciseDropDownTableView: View {
                         Text("Prev")
                             .fontWeight(.semibold)
                         Divider()
-                        ForEach($viewModel.entries, id: \.self) { $entry in
+                        ForEach($entries, id: \.self) { $entry in
                             Text((entry.prevWgtLbs != nil) ? entry.prevWgtLbsString : "-")
                         }
                         .frame(height: 34)
@@ -56,12 +61,13 @@ struct ExerciseDropDownTableView: View {
                         Text("lbs")
                             .fontWeight(.semibold)
                         Divider()
-                        ForEach($viewModel.entries, id: \.self) { $entry in
-                            TextField("Wgt", value: $entry.wgtLbs, format: .number)
+                        ForEach(entries.indices, id: \.self) { index in
+                            TextField("Wgt", value: $entries[index].wgtLbs, format: .number)
                                 .multilineTextAlignment(.center)
                                 .frame(maxWidth: 40)
                                 .padding(3)
                                 .background(RoundedRectangle(cornerRadius: 10).fill( Color(UIColor.tertiarySystemBackground)))
+                                .keyboardType(.numberPad)
                         }
                         .frame(height: 34)
                     }
@@ -71,12 +77,13 @@ struct ExerciseDropDownTableView: View {
                         Text("Reps")
                             .fontWeight(.semibold)
                         Divider()
-                        ForEach($viewModel.entries, id: \.self) { $entry in
-                            TextField("Reps", value: $entry.reps, format: .number)
+                        ForEach(entries.indices, id: \.self) { index in
+                            TextField("Reps", value: $entries[index].reps, format: .number)
                                 .multilineTextAlignment(.center)
                                 .frame(maxWidth: 40)
                                 .padding(3)
                                 .background(RoundedRectangle(cornerRadius: 10).fill( Color(UIColor.tertiarySystemBackground)))
+                                .keyboardType(.numberPad)
                         }
                         .frame(minHeight: 34)
                     }
@@ -86,19 +93,33 @@ struct ExerciseDropDownTableView: View {
                         Text("Save")
                             .fontWeight(.semibold)
                         Divider()
-                        ForEach($viewModel.entries, id: \.self) { $entry in
+                        ForEach(entries.indices, id: \.self) { index in
                             Button {
-                                viewModel.save(workout: workout,
-                                               exercise: exercise,
-                                               set: entry.set)
+                                if entries[index].saved {
+                                    viewModel.unsave(workout: workout,
+                                                     exercise: exercise,
+                                                     set: entries[index].set)
+                                }
+                                else {
+                                    viewModel.save(workout: workout,
+                                                   exercise: exercise,
+                                                   set: entries[index].set,
+                                                   entries: entries,
+                                                   notes: notes)
+                                }
+                                
+                                entries[index].saved = !(entries[index].saved)
+                                hideKeyboard()
+
                             } label: {
-                                Image(systemName: entry.saved ?
+                                Image(systemName: entries[index].saved ?
                                       "checkmark.rectangle.portrait.fill" :
                                         "checkmark.rectangle.portrait")
-                                .foregroundColor(entry.saved ? .green : .primary)
+                                .imageScale(.medium)
+                                .foregroundColor(entries[index].saved ? .green : .primary)
                             }
                             .buttonStyle(.bordered)
-                            .background(Color(UIColor.tertiarySystemBackground))
+                            .background(Color.buttonBackground)
                             
                         }
                         .frame(height: 34)
@@ -108,7 +129,16 @@ struct ExerciseDropDownTableView: View {
                 
                 Button {
                     viewModel.saveAll(workout: workout,
-                                      exercise: exercise)
+                                      exercise: exercise,
+                                      entries: entries,
+                                      exerciseNotes: notes)
+                    
+                    hideKeyboard()
+                    
+                    for set in 0..<entries.count {
+                        // Update all entries to be saved
+                        entries[set].saved = true
+                    }
                 } label: {
                     Text("Save All")
                         .multilineTextAlignment(.center)
@@ -119,7 +149,7 @@ struct ExerciseDropDownTableView: View {
                         .cornerRadius(10)
                 }
                 .buttonStyle(.bordered)
-                .background(Color(UIColor.tertiarySystemBackground))
+                .background(Color.buttonBackground)
             }
         }
         .padding()
@@ -130,15 +160,15 @@ struct ExerciseDropDownTableView: View {
             )
         .onAppear {
             self.viewModel.setup(self.dbMgr)
-            for set in 0..<exercise.sets {
-                let prevWgt = viewModel.getPrev(exerciseName: exercise.name,
-                                                set: set+1)
-                viewModel.entries.append(ExerciseEntry(set: set,
-                                                       prevWgtLbs: prevWgt,
-                                                       wgtLbs: nil,
-                                                       reps: Int(repsArr[set].text) ?? 0,
-                                                       saved: false))
-            }
+//            for set in 0..<exercise.sets {
+//                let prevWgt = viewModel.getPrev(exerciseName: exercise.name,
+//                                                set: set)
+//                entries.append(ExerciseEntry(set: set,
+//                                             prevWgtLbs: prevWgt,
+//                                             wgtLbs: nil,
+//                                             reps: Int(repsArr[set].text) ?? 0,
+//                                             saved: false))
+//            }
         }
     }
 }
@@ -147,30 +177,25 @@ struct ExerciseDropDownTableView_Previews: PreviewProvider {
     static let dbMgr = DbManager(db_path: "WorkoutTracker.sqlite")
     static var previews: some View {
         ExerciseDropDownTableView(workout: MockData.sampleWorkout1,
-                                 exercise: MockData.sampleExercises[0],
-                                 repsArr: .constant(MockData.sampleRepsWeightArr),
-                                 weightArr: .constant(MockData.sampleRepsWeightArr))
+                                  exercise: MockData.sampleExercises[0],
+                                  repsArr: .constant(MockData.sampleRepsWeightArr),
+                                  weightArr: .constant(MockData.sampleRepsWeightArr),
+                                  entries: .constant(MockData.sampleEntries),
+                                  notes: .constant(""))
             .environmentObject(dbMgr)
     }
 }
 
-struct ExerciseEntry : Identifiable, Hashable {
-    let set : Int
-    let prevWgtLbs : Float?
-    var wgtLbs : Float?
-    var reps : Int
-    var saved : Bool
-    let id = UUID()
-    
-    var setString: String {
-        String(set+1)
-    }
-    
-    var prevWgtLbsString: String {
-        String(prevWgtLbs!)
-    }
-    
-    var wgtLbsString: String {
-        String(wgtLbs!)
+// Textfield that will not trigger a re-draw of the Nav View when inputting a character
+struct CustomTextField: View {
+    @Binding var owner : Int
+    @State var label : String
+    @State var value = "" // updates only local view
+
+    var body: some View {
+        let text = Binding(get: { self.value }, set: {
+            self.value = $0; self.owner = Int($0) ?? 0;  // transfer the value
+        })
+        return TextField(label, text: text)
     }
 }

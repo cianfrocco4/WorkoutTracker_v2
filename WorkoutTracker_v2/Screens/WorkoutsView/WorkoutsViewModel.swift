@@ -10,12 +10,14 @@ final class WorkoutsViewModel: ObservableObject {
     var dbMgr : DbManager?
 
     @Published var workouts : [Workout] = []
+    @Published var workoutHistory : [WorkoutHistory] = []
     @Published var isWorkoutSelected = false
     @Published var selectedWorkout : Workout?
+    @Published var isShowingAddNewWorkout = false
     
     func setup(_ dbMgr : DbManager) {
         self.dbMgr = dbMgr
-        self.workouts = dbMgr.getWorkouts()
+        refreshWorkouts()
     }
     
     func getLastTimePerformed(workoutName : String) -> String {
@@ -31,5 +33,34 @@ final class WorkoutsViewModel: ObservableObject {
         else {
             return "Not yet performed"
         }
+    }
+    
+    func addNewWorkoutClicked() {
+        isShowingAddNewWorkout = !isShowingAddNewWorkout
+    }
+    
+    func refreshWorkouts() {
+        guard let mgr = dbMgr else { return }
+
+        self.workouts = mgr.getWorkouts()
+        self.workoutHistory = getWorkoutHistory(days: 30)
+    }
+    
+    func removeWorkout(workoutName : String) {
+        let idx = workouts.firstIndex(where: { $0.name == workoutName } )
+        
+        if (idx != nil) {
+            workouts.remove(at: idx!)
+            
+            guard let mgr = dbMgr else { return }
+            
+            mgr.removeWorkout(workoutName: workoutName)
+        }
+    }
+    
+    func getWorkoutHistory(days: Int) -> [WorkoutHistory] {
+        guard let mgr = self.dbMgr else { return [] }
+        let workoutHistory = mgr.getLastDaysPerformed(days: days)
+        return workoutHistory
     }
 }
