@@ -66,7 +66,8 @@ struct ExercisesView: View {
                                 let idx = exercises.firstIndex(where: { $0.name == exercise.name })
                                 
                                 if (idx != nil) {
-                                    let e = exercises[idx!]
+                                    // TODO do this here or in NewExerciseView???
+//                                    exercises.remove(at: idx!)
                                     viewModel.isShowingSwapExer = true
                                     viewModel.swapIdx = idx!
                                 }

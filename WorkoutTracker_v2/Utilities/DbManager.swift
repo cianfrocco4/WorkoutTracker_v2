@@ -379,7 +379,31 @@ class DbManager : ObservableObject {
                     return
                 }
                 
-                print("Added exercise!")
+                print("Added exercise: " + exercise.name + " to workout: " + workout.name)
+                
+                sqlite3_finalize(stmt)
+            }
+        }
+    }
+    
+    func removeExerciseFromWorkout(workout: Workout, exercise: Exercise) {
+        if(isDbOpen) {
+            let queryStr = "DELETE FROM WorkoutDetails WHERE workoutName = '" + workout.name + "' AND exerciseName = '" +
+                           exercise.name + "'"
+            
+            var stmt: OpaquePointer?
+
+            if sqlite3_prepare_v2(db, queryStr, -1, &stmt, nil) != SQLITE_OK{
+                let errmsg = String(cString: sqlite3_errmsg(db)!)
+                print("error preparing: \(errmsg)")
+            }
+            else {
+                if sqlite3_step(stmt) != SQLITE_DONE {
+                    print("ERROR could not execute: " + queryStr)
+                    return
+                }
+                
+                print("Removed exercise: " + exercise.name + " from workout: " + workout.name)
                 
                 sqlite3_finalize(stmt)
             }

@@ -88,17 +88,31 @@ struct NewExerciseView: View {
                                          maxReps: maxNumberOfReps!,
                                          weight: 0)
                         
+                        var eToRemove : Exercise? = nil
+                                                
                         if swapIdx == nil {
                             exercises.append(e)
                         }
                         else {
+                            // get the exercise to remove before it is removed from the local list
+                            eToRemove = swapIdx == nil ? nil : exercises[swapIdx!]
+
+                            // Remove the swapped from item
+                            exercises.remove(at: swapIdx!)
+                            
+                            // Add the swapped to item
                             exercises.insert(e, at: swapIdx!)
                         }
                         
                         if selectedType == ExerciseType.permanent {
                             // Upate the database
                             dbMgr.addExerciseToWorkout(workout: workout, exercise: e)
-                        }
+                            
+                            if eToRemove != nil {
+                                // remove the swapped from exercise from the workout
+                                dbMgr.removeExerciseFromWorkout(workout: workout,
+                                                                exercise: eToRemove!)
+                            }                        }
                     }
                 } label: {
                     Text("Save")
@@ -134,6 +148,7 @@ struct NewExerciseView: View {
         .onAppear() {
             // re-query to get updated list of exercises
             allExerciseNames = dbMgr.getExercises()
+            exerciseName = allExerciseNames.first ?? ""
         }
         .onDisappear() {
             swapIdx = nil // nullify this field on disappear
