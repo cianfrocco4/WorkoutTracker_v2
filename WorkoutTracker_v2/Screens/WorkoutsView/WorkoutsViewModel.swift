@@ -6,6 +6,8 @@
 //
 
 import Foundation
+import SwiftUI
+
 final class WorkoutsViewModel: ObservableObject {
     var dbMgr : DbManager?
 
@@ -14,6 +16,14 @@ final class WorkoutsViewModel: ObservableObject {
     @Published var isWorkoutSelected = false
     @Published var selectedWorkout : Workout?
     @Published var isShowingAddNewWorkout = false
+    
+    var selectedWorkoutBinding: Binding<Workout> {
+        Binding {
+            self.selectedWorkout ?? MockData.sampleWorkout1 // TODO figure out best default value
+        } set: {
+            self.selectedWorkout = $0
+        }
+    }
     
     func setup(_ dbMgr : DbManager) {
         self.dbMgr = dbMgr

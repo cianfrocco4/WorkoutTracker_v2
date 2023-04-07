@@ -9,17 +9,21 @@ import SwiftUI
 
 struct ExerciseDropDownTableView: View {
     
-    @State var workout  : Workout
+    @State var workout  : Workout?
     @State var exercise : Exercise
+    @State var restTime : UInt
         
     @StateObject private var viewModel = ExerciseDropDownViewModel()
     
     @EnvironmentObject var dbMgr : DbManager
+    @EnvironmentObject private var selectedWkout : Workout
     
     @Binding var repsArr : [TextBindingManager]
     @Binding var weightArr : [TextBindingManager]
     @Binding var entries : [ExerciseEntry]
     @Binding var notes : String
+    @Binding var restTimeRemainingSec : UInt
+    @Binding var restTimeRunning : Bool
     
     let formatter: NumberFormatter = {
         let formatter = NumberFormatter()
@@ -96,16 +100,19 @@ struct ExerciseDropDownTableView: View {
                         ForEach(entries.indices, id: \.self) { index in
                             Button {
                                 if entries[index].saved {
-                                    viewModel.unsave(workout: workout,
+                                    viewModel.unsave(workout: selectedWkout,//workout: workout,
                                                      exercise: exercise,
                                                      set: entries[index].set)
                                 }
                                 else {
-                                    viewModel.save(workout: workout,
+                                    viewModel.save(workout: selectedWkout, //workout,
                                                    exercise: exercise,
                                                    set: entries[index].set,
                                                    entries: entries,
                                                    notes: notes)
+                                    
+                                    restTimeRemainingSec = selectedWkout.restTimeSec //workout.restTimeSec
+                                    restTimeRunning = true  // start the rest time timer
                                 }
                                 
                                 entries[index].saved = !(entries[index].saved)
@@ -128,11 +135,10 @@ struct ExerciseDropDownTableView: View {
                 .padding(.bottom, 10)
                 
                 Button {
-                    viewModel.saveAll(workout: workout,
+                    viewModel.saveAll(workout: selectedWkout, //workout,
                                       exercise: exercise,
                                       entries: entries,
                                       exerciseNotes: notes)
-                    
                     hideKeyboard()
                     
                     for set in 0..<entries.count {
@@ -178,11 +184,15 @@ struct ExerciseDropDownTableView_Previews: PreviewProvider {
     static var previews: some View {
         ExerciseDropDownTableView(workout: MockData.sampleWorkout1,
                                   exercise: MockData.sampleExercises[0],
+                                  restTime: 60,
                                   repsArr: .constant(MockData.sampleRepsWeightArr),
                                   weightArr: .constant(MockData.sampleRepsWeightArr),
                                   entries: .constant(MockData.sampleEntries),
-                                  notes: .constant(""))
+                                  notes: .constant(""),
+                                  restTimeRemainingSec: .constant(60),
+                                  restTimeRunning: .constant(false))
             .environmentObject(dbMgr)
+            .environmentObject(MockData.sampleWorkout1)
     }
 }
 

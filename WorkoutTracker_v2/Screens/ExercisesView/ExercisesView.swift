@@ -8,12 +8,17 @@
 import SwiftUI
 
 struct ExercisesView: View {
-    @State var workout   : Workout
     @State var exercises : [Exercise]
     
     @EnvironmentObject var dbMgr : DbManager
+    @EnvironmentObject private var selectedWkout : Workout
     
     @StateObject private var viewModel = ExercisesViewModel()
+    
+    @State var restTime                   : UInt
+    
+    @Binding var restTimeRemainingSec : UInt
+    @Binding var restTimeRunning      : Bool
         
     var body: some View {
         ZStack {
@@ -25,6 +30,10 @@ struct ExercisesView: View {
                             viewModel.selectExercise(exercise: exercise)
                         } label: {
                             HStack {
+                                Circle()
+                                    .fill(viewModel.getColorForExercise(exercise: exercise))
+                                    .frame(width: 10, height: 10)
+                                
                                 Text(exercise.name)
                                     .font(.title3)
                                     .frame(alignment: .leading)
@@ -66,8 +75,6 @@ struct ExercisesView: View {
                                 let idx = exercises.firstIndex(where: { $0.name == exercise.name })
                                 
                                 if (idx != nil) {
-                                    // TODO do this here or in NewExerciseView???
-//                                    exercises.remove(at: idx!)
                                     viewModel.isShowingSwapExer = true
                                     viewModel.swapIdx = idx!
                                 }
@@ -92,12 +99,14 @@ struct ExercisesView: View {
                             //                                             exercise: viewModel.selectedExercise!,
                             //                                             repsArr: $viewModel.repsArr,
                             //                                             weightArr: $viewModel.weightArr)
-                            ExerciseDropDownTableView(workout: workout,
-                                                      exercise: viewModel.selectedExercise!,
+                            ExerciseDropDownTableView(exercise: viewModel.selectedExercise!,
+                                                      restTime: restTime,
                                                       repsArr: $viewModel.repsArr,
                                                       weightArr: $viewModel.weightArr,
                                                       entries: $viewModel.exerciseEntries,
-                                                      notes: $viewModel.notes)
+                                                      notes: $viewModel.notes,
+                                                      restTimeRemainingSec: $restTimeRemainingSec,
+                                                      restTimeRunning: $restTimeRunning)
                             .frame(width: 325,
                                    height: 330)
                         }
@@ -122,17 +131,16 @@ struct ExercisesView: View {
             .disabled(viewModel.isShwoingAddNewExer ||
                       viewModel.isShowingSwapExer)
             
-            if viewModel.isShwoingAddNewExer ||
-                viewModel.isShowingSwapExer {
-                NewExerciseView(workout: workout,
-                                isShwoingAddNewExer: $viewModel.isShwoingAddNewExer,
+            if (viewModel.isShwoingAddNewExer ||
+                viewModel.isShowingSwapExer) {
+                NewExerciseView(isShwoingAddNewExer: $viewModel.isShwoingAddNewExer,
                                 isShowingSwapExer: $viewModel.isShowingSwapExer,
                                 exercises: $exercises,
                                 swapIdx: $viewModel.swapIdx)
             }
         }
         .onAppear {
-            self.viewModel.setup(self.dbMgr, workout: workout)
+            self.viewModel.setup(self.dbMgr, workout: selectedWkout) // workout)
         }
     }
 }
@@ -140,8 +148,11 @@ struct ExercisesView: View {
 struct ExercisesView_Previews: PreviewProvider {
     static let dbMgr = DbManager(db_path: "WorkoutTracker.sqlite")
     static var previews: some View {
-        ExercisesView(workout: MockData.sampleWorkout1,
-                      exercises: MockData.sampleExercises)
+        ExercisesView(exercises: MockData.sampleExercises,
+                      restTime: 60,
+                      restTimeRemainingSec: .constant(60),
+                      restTimeRunning: .constant(false))
             .environmentObject(dbMgr)
+            .environmentObject(MockData.sampleWorkout1)
     }
 }

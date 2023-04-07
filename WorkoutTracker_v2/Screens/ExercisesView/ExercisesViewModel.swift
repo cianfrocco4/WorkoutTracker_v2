@@ -5,6 +5,7 @@
 //  Created by Anthony Cianfrocco on 2/4/23.
 //
 
+import SwiftUI
 import Foundation
 
 final class ExercisesViewModel: ObservableObject {
@@ -22,7 +23,7 @@ final class ExercisesViewModel: ObservableObject {
     @Published var notes : String = ""
     
     func setup(_ dbMgr : DbManager,
-               workout: Workout) {
+               workout: Workout?) {
         self.dbMgr = dbMgr
         self.workout = workout
         setRepsAndWeight()
@@ -133,5 +134,31 @@ final class ExercisesViewModel: ObservableObject {
     
     func addNewExerciseClicked() {
         isShwoingAddNewExer = !isShwoingAddNewExer
+    }
+    
+    func getColorForExercise(exercise: Exercise) -> Color {
+        
+        var lbExerciseCompletedForAllSets = exercise.sets > 0 ? true : false
+        var lbExerciseCompletedForAtleastOneSet = false
+
+        for set in 1..<exercise.sets+1 {
+            lbExerciseCompletedForAllSets = lbExerciseCompletedForAllSets &&
+                                            getPrevDateToday(exerciseName: exercise.name,
+                                                             set: set)
+            lbExerciseCompletedForAtleastOneSet = lbExerciseCompletedForAtleastOneSet ||
+                                                  getPrevDateToday(exerciseName: exercise.name,
+                                                                   set: set)
+            
+        }
+        
+        if lbExerciseCompletedForAllSets {
+            return .green
+        }
+        else if lbExerciseCompletedForAtleastOneSet {
+            return .yellow
+        }
+        else {
+            return .red
+        }
     }
 }

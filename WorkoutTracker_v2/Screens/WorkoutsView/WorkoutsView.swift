@@ -69,8 +69,8 @@ struct WorkoutsView: View {
                       viewModel.isShowingAddNewWorkout)
             
             if viewModel.isWorkoutSelected {
-                WorkoutView(isWorkoutSelected: $viewModel.isWorkoutSelected,
-                            selectedWorkout: viewModel.selectedWorkout!)
+                WorkoutView(isWorkoutSelected: $viewModel.isWorkoutSelected)
+                .environmentObject(viewModel.selectedWorkout!)
                 .onDisappear(perform: {
                     viewModel.refreshWorkouts()
                 })

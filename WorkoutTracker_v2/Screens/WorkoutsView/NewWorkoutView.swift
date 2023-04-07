@@ -78,8 +78,7 @@ struct NewWorkoutView: View {
             .blur(radius: viewModel.isShowingNewExer ? 20 : 0)
             
             if viewModel.isShowingNewExer {
-                NewExerciseView(workout: viewModel.newWorkout,
-                                isShwoingAddNewExer: $viewModel.isShowingNewExer,
+                NewExerciseView(isShwoingAddNewExer: $viewModel.isShowingNewExer,
                                 isShowingSwapExer: .constant(false),
                                 exercises: $viewModel.newWorkout.exercises,
                                 swapIdx: .constant(nil))

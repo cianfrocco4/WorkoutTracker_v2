@@ -10,7 +10,7 @@ final class NewWorkoutViewModel: ObservableObject {
     var dbMgr : DbManager?
     
     @Published var newWorkoutName = ""
-    @Published var newWorkout = Workout(id: 0, name: "", exercises: [])
+    @Published var newWorkout = Workout(id: 0, name: "", exercises: [], restTimeSec: 60)
     @Published var exercises : [Exercise] = []
     @Published var isShowingNewExer = false
     

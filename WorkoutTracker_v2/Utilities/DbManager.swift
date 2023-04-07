@@ -115,6 +115,7 @@ class DbManager : ObservableObject {
                 let numSets = sqlite3_column_int(stmt, 2)
                 let minReps = sqlite3_column_int(stmt, 3)
                 let maxReps = sqlite3_column_int(stmt, 4)
+                let restTimeSec = UInt(sqlite3_column_int(stmt, 5)) / (1000000)  // convert USec to Sec
      
                 //adding values to list
                 let exercise = Exercise(id: exerciseId, name: exerciseName, sets: Int(numSets), minReps: Int(minReps), maxReps: Int(maxReps), weight: 0)
@@ -123,7 +124,7 @@ class DbManager : ObservableObject {
                     workouts[workoutIndex!].exercises.append(exercise)
                 }
                 else {
-                    workouts.append(Workout(id: workoutId, name: workoutName, exercises: [exercise]))
+                    workouts.append(Workout(id: workoutId, name: workoutName, exercises: [exercise], restTimeSec: restTimeSec))
                     workoutId += 1
                 }
                 exerciseId += 1
@@ -137,12 +138,34 @@ class DbManager : ObservableObject {
     }
     
     func saveWorkout(workoutName : String,
-                     notes: String) {
+                     notes: String,
+                     restTimeSec : UInt) {
         if isDbOpen {
-            print("Saving workout to database: \(workoutName)")
-            let queryStr = "INSERT INTO WorkoutHistory ( workoutName, notes, date ) VALUES ( '" +
-                            workoutName + "', \'" + notes + "\'" + ", date('now', 'localtime') )"
+            // Make sure there is workout entry for today's date
+            var queryStr = "SELECT workoutName FROM WorkoutHistory WHERE workoutName = '" + workoutName + "' AND date = date('now', 'localtime')"
             var stmt: OpaquePointer?
+
+            //preparing the query
+            if sqlite3_prepare_v2(db, queryStr, -1, &stmt, nil) != SQLITE_OK{
+                let errmsg = String(cString: sqlite3_errmsg(db)!)
+                print("error preparing: \(errmsg)")
+                return
+            }
+            
+            if(sqlite3_step(stmt) == SQLITE_ROW) {
+                updateWorkoutRestTime(workoutName: workoutName,
+                                      restTimeSec: restTimeSec)
+                queryStr = "UPDATE WorkoutHistory SET notes = '" + notes +
+                           "' WHERE workoutName = '" + workoutName + "' AND date = date('now', 'localtime')"
+            }
+            else {
+                queryStr = "INSERT INTO WorkoutHistory ( workoutName, notes, date ) VALUES ( '" +
+                                workoutName + "', \'" + notes + "\'" + ", date('now', 'localtime') )"
+            }
+            
+            print("Saving workout to database: \(workoutName)")
+//            queryStr = "INSERT INTO WorkoutHistory ( workoutName, notes, date ) VALUES ( '" +
+//                            workoutName + "', \'" + notes + "\'" + ", date('now', 'localtime') )"
             if sqlite3_prepare_v2(db, queryStr, -1, &stmt, nil) != SQLITE_OK {
                 print("ERROR preparing statement: " + queryStr)
                 return
@@ -157,6 +180,25 @@ class DbManager : ObservableObject {
             
             print("Saved workout!")
         }
+    }
+    
+    func updateWorkoutRestTime(workoutName: String,
+                               restTimeSec : UInt) {
+        var queryStr = "UPDATE WorkoutDetails SET restTimeUSec = " + String(restTimeSec * 1000000) +
+        " WHERE workoutName = '" + workoutName + "'"
+        var stmt: OpaquePointer?
+        
+        if sqlite3_prepare_v2(db, queryStr, -1, &stmt, nil) != SQLITE_OK {
+            print("ERROR preparing statement: " + queryStr)
+            return
+        }
+        
+        if sqlite3_step(stmt) != SQLITE_DONE {
+            print("ERROR could not execute: " + queryStr)
+            return
+        }
+        
+        sqlite3_finalize(stmt)
     }
     
     func saveExercise(workoutName : String,
@@ -550,7 +592,7 @@ class DbManager : ObservableObject {
                     if isSameDay(date1: workouts[idx].date, date2: date) {
                         workouts[idx].workout = Workout(id: workouts[idx].id,
                                                         name: String(cString: sqlite3_column_text(stmt, 0)),
-                                                        exercises: []) // TODO exercises
+                                                        exercises: [], restTimeSec: 0) // TODO exercises, restTimeSec
                     }
                 }
             }

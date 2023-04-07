@@ -15,9 +15,7 @@ struct NewExerciseView: View {
 
     @State private var selectedType: ExerciseType = .temporary
     @State private var exerciseName = ""
-    
-    @State var workout : Workout
-    
+        
     @State var numberOfSets : Int?
     @State var minNumberOfReps : Int?
     @State var maxNumberOfReps : Int?
@@ -29,6 +27,7 @@ struct NewExerciseView: View {
     @Binding var swapIdx : Int?
     
     @EnvironmentObject var dbMgr : DbManager
+    @EnvironmentObject private var selectedWkout : Workout
 
     var body: some View {
         VStack {
@@ -106,11 +105,12 @@ struct NewExerciseView: View {
                         
                         if selectedType == ExerciseType.permanent {
                             // Upate the database
-                            dbMgr.addExerciseToWorkout(workout: workout, exercise: e)
+                            dbMgr.addExerciseToWorkout(workout: selectedWkout, //workout,
+                                                       exercise: e)
                             
                             if eToRemove != nil {
                                 // remove the swapped from exercise from the workout
-                                dbMgr.removeExerciseFromWorkout(workout: workout,
+                                dbMgr.removeExerciseFromWorkout(workout: selectedWkout, //workout,
                                                                 exercise: eToRemove!)
                             }                        }
                     }
@@ -159,11 +159,11 @@ struct NewExerciseView: View {
 struct NewExerciseView_Previews: PreviewProvider {
     static let dbMgr = DbManager(db_path: "WorkoutTracker.sqlite")
     static var previews: some View {
-        NewExerciseView(workout: MockData.sampleWorkout1,
-                        isShwoingAddNewExer: .constant(true),
+        NewExerciseView(isShwoingAddNewExer: .constant(true),
                         isShowingSwapExer: .constant(false),
                         exercises: .constant(MockData.sampleExercises),
                         swapIdx: .constant(nil))
         .environmentObject(dbMgr)
+        .environmentObject(MockData.sampleWorkout1)
     }
 }
