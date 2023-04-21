@@ -161,4 +161,10 @@ final class ExercisesViewModel: ObservableObject {
             return .red
         }
     }
+    
+    func removeExercise(exercise: Exercise) {
+        guard let mgr = dbMgr else { return }
+        guard let w = workout else { return }
+        mgr.removeExerciseFromWorkout(workout: w, exercise: exercise)
+    }
 }

@@ -16,6 +16,8 @@
 		924F7B7F2983681A0041E641 /* databases in Resources */ = {isa = PBXBuildFile; fileRef = 924F7B7E2983681A0041E641 /* databases */; };
 		924F7B812983684D0041E641 /* DbManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 924F7B802983684D0041E641 /* DbManager.swift */; };
 		924F7B832983726D0041E641 /* WorkoutsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 924F7B822983726D0041E641 /* WorkoutsViewModel.swift */; };
+		926F41F829E9DBD9006143CF /* UIApplication+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 926F41F729E9DBD9006143CF /* UIApplication+Ext.swift */; };
+		926F41FD29EE1E78006143CF /* StopWatch.swift in Sources */ = {isa = PBXBuildFile; fileRef = 926F41FC29EE1E78006143CF /* StopWatch.swift */; };
 		9293F39129997A1D00D1EC29 /* ExercisesListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9293F39029997A1D00D1EC29 /* ExercisesListView.swift */; };
 		9293F39329997B0A00D1EC29 /* ExerciseListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9293F39229997B0A00D1EC29 /* ExerciseListViewModel.swift */; };
 		92991A2029CF30AD00579542 /* WorkoutHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92991A1F29CF30AD00579542 /* WorkoutHistoryView.swift */; };
@@ -57,6 +59,8 @@
 		924F7B7E2983681A0041E641 /* databases */ = {isa = PBXFileReference; lastKnownFileType = folder; path = databases; sourceTree = "<group>"; };
 		924F7B802983684D0041E641 /* DbManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DbManager.swift; sourceTree = "<group>"; };
 		924F7B822983726D0041E641 /* WorkoutsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutsViewModel.swift; sourceTree = "<group>"; };
+		926F41F729E9DBD9006143CF /* UIApplication+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIApplication+Ext.swift"; sourceTree = "<group>"; };
+		926F41FC29EE1E78006143CF /* StopWatch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StopWatch.swift; sourceTree = "<group>"; };
 		9293F39029997A1D00D1EC29 /* ExercisesListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExercisesListView.swift; sourceTree = "<group>"; };
 		9293F39229997B0A00D1EC29 /* ExerciseListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseListViewModel.swift; sourceTree = "<group>"; };
 		92991A1F29CF30AD00579542 /* WorkoutHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutHistoryView.swift; sourceTree = "<group>"; };
@@ -249,6 +253,7 @@
 			isa = PBXGroup;
 			children = (
 				924F7B802983684D0041E641 /* DbManager.swift */,
+				926F41FC29EE1E78006143CF /* StopWatch.swift */,
 				9249FB89298DFCFF008B8A10 /* TextBindingManager.swift */,
 				92CEF2EB299976F900ED5DBA /* Extensions */,
 			);
@@ -260,6 +265,7 @@
 			children = (
 				92CEF2E32999550B00ED5DBA /* Color+Ext.swift */,
 				92CEBD5229A3081A0059B8FA /* View+Ext.swift */,
+				926F41F729E9DBD9006143CF /* UIApplication+Ext.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -283,6 +289,7 @@
 				92B73F2D2978D50D004DDCE4 /* Sources */,
 				92B73F2E2978D50D004DDCE4 /* Frameworks */,
 				92B73F2F2978D50D004DDCE4 /* Resources */,
+				926F41FB29EB42C6006143CF /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -339,6 +346,36 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		926F41FB29EB42C6006143CF /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/WorkoutTracker_v2/databases/WorkoutTracker.sqlite",
+				"$(SRCROOT)/WorkoutTracker_v2/databases/scripts/UpdateWeightCol.sql",
+				"$(SRCROOT)/WorkoutTracker_v2/databases/scripts/AddWorkoutTimerCol.sql",
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/WorkoutTracker_v2/databases/WorkoutTracker.sqlite",
+				"$(DERIVED_FILE_DIR)/WorkoutTracker_v2/databases/Workout-bak.csv",
+				"$(DERIVED_FILE_DIR)/WorkoutTracker_v2/databases/Exercise-bak.csv",
+				"$(DERIVED_FILE_DIR)/WorkoutTracker_v2/databases/WorkoutDetails-bak.csv",
+				"$(DERIVED_FILE_DIR)/WorkoutTracker_v2/databases/WorkoutHistory-bak.csv",
+				"$(DERIVED_FILE_DIR)/WorkoutTracker_v2/databases/ExerciseHistory-bak.csv",
+				"$(DERIVED_FILE_DIR)/WorkoutTracker_v2/databases/WorkoutTracker.sqlite.bak",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "#!/bin/sh\n\n# Copy the default db to be used on the build\ncp ${DB_FILE}.default ${DB_FILE}\nexit 0\n\n### NOTHING BELOW HERE IS BEING EXECUTED ###\n\necho \"note: SCRIPT_INPUT_FILE_COUNT = \" ${SCRIPT_INPUT_FILE_COUNT}\n\n\nif [[ $SCRIPT_INPUT_FILE_COUNT -lt 1 ]]\nthen\n    echo \"warning: input file count is 0\"\n    exit 0\nfi\n\n# Expect first input file to be the db file\nDB_FILE=${SCRIPT_INPUT_FILE_0}\necho \"DB_FILE = $DB_FILE\"\n\n# put current date as yyyy-mm-dd HH:MM:SS in $date\n\ncp \"${DB_FILE}.default\" ${DB_FILE}\n\nOUTPUT_DIR=\"${DERIVED_FILE_DIR}/WorkoutTracker_v2/databases\"\necho \"OUTPUT_DIR = \" $OUTPUT_DIR\n\n# Workout table\nsqlite3 $DB_FILE \".headers on\" \".mode csv\" \".output ${OUTPUT_DIR}/Workout-bak.csv\" \"SELECT * FROM Workout;\"\n# Exercise table\nsqlite3 $DB_FILE \".headers on\" \".mode csv\" \".output ${OUTPUT_DIR}/Exercise-bak.csv\" \"SELECT * FROM Exercise;\"\n# WorkoutDetails table\nsqlite3 $DB_FILE \".headers on\" \".mode csv\" \".output ${OUTPUT_DIR}/WorkoutDetails-bak.csv\" \"SELECT * FROM WorkoutDetails;\"\n# WorkoutHistory table\nsqlite3 $DB_FILE \".headers on\" \".mode csv\" \".output ${OUTPUT_DIR}/WorkoutHistory-bak.csv\" \"SELECT * FROM WorkoutHistory;\"\n# ExerciseHistory table\nsqlite3 $DB_FILE \".headers on\" \".mode csv\" \".output ${OUTPUT_DIR}/ExerciseHistory-bak.csv\" \"SELECT * FROM ExerciseHistory;\"\n\n# Execute SQL scripts on database file\n\nCOUNTER=1  # start at second input file (index=1)\nwhile [[ $COUNTER -lt $SCRIPT_INPUT_FILE_COUNT ]]; do\n    tmp=\"SCRIPT_INPUT_FILE_$COUNTER\"\n    FILE=${!tmp}\n    \n    echo \"note: file = $FILE\"\n\n    if [[ $FILE == *.sql ]]\n    then\n        sqlite3 $DB_FILE < $FILE\n    fi\n\n    let COUNTER=COUNTER+1\ndone\n\n# Load CSVs back into database \nFILE=\"${OUTPUT_DIR}/Workout-bak.csv\"\nif test -f \"$FILE\"; then\n    sqlite3 $DB_FILE \".mode csv\" \".import ${FILE} Workout\" || true\nfi\n\nFILE=\"${OUTPUT_DIR}/Exercise-bak.csv\"\nif test -f \"$FILE\"; then\n    sqlite3 $DB_FILE \".mode csv\" \".import ${FILE} Exercise\" || true\nfi\n\nFILE=\"${OUTPUT_DIR}/WorkoutDetails-bak.csv\"\nif test -f \"$FILE\"; then\n    sqlite3 $DB_FILE \".mode csv\" \".import ${FILE} WorkoutDetails\" || true\nfi\n\nFILE=\"${OUTPUT_DIR}/WorkoutHistory-bak.csv\"\nif test -f \"$FILE\"; then\n    sqlite3 $DB_FILE \".mode csv\" \".import ${FILE} WorkoutHistory\" || true\nfi\n\nFILE=\"${OUTPUT_DIR}/ExerciseHistory-bak.csv\"\nif test -f \"$FILE\"; then\n    sqlite3 $DB_FILE \".mode csv\" \".import ${FILE} ExerciseHistory\" || true\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		92B73F2D2978D50D004DDCE4 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -357,9 +394,11 @@
 				9293F39129997A1D00D1EC29 /* ExercisesListView.swift in Sources */,
 				92CEBD5829C7E8BC0059B8FA /* NewWorkoutView.swift in Sources */,
 				9249FB8A298DFCFF008B8A10 /* TextBindingManager.swift in Sources */,
+				926F41FD29EE1E78006143CF /* StopWatch.swift in Sources */,
 				92991A2B29D7BDF000579542 /* WorkoutStatisticsViewModel.swift in Sources */,
 				92991A3A29DBA47800579542 /* WorkoutViewModel.swift in Sources */,
 				924F7B812983684D0041E641 /* DbManager.swift in Sources */,
+				926F41F829E9DBD9006143CF /* UIApplication+Ext.swift in Sources */,
 				924F7B7B297DFA230041E641 /* ExercisesView.swift in Sources */,
 				92B73F372978D50D004DDCE4 /* WorkoutTrackerTabView.swift in Sources */,
 				92CEBD5A29C7EA5E0059B8FA /* RoundedButton.swift in Sources */,
@@ -506,7 +545,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "\"WorkoutTracker_v2/Preview Content\"";
 				DEVELOPMENT_TEAM = N7HAUF9TT9;
 				ENABLE_PREVIEWS = YES;
@@ -536,7 +575,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "\"WorkoutTracker_v2/Preview Content\"";
 				DEVELOPMENT_TEAM = N7HAUF9TT9;
 				ENABLE_PREVIEWS = YES;

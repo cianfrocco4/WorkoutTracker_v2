@@ -16,17 +16,9 @@ struct WorkoutView: View {
     @Binding var isWorkoutSelected : Bool
     
     @State private var restTime : UInt = 60
-    @State private var restTimeRemaining : UInt = 60  // default to 60 seconds
     @State private var restTimerRunning = false
-    
-    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
-    
-    // TODO:
-    //    1) Sync restTimerRemaining with selectedWorkout.restTimeSec upon a change to the text field
-    //    2) Write to the database when selectedWorkout.restTimeSec is changed
-    //    3) Add rest time field in "Add New Workout" view
-    //    4) change color to indicate when rest timer reaches 0???
-    
+    @State private var restTimeRemaining : UInt = 60
+        
     var body: some View {
         NavigationView {
             VStack {
@@ -56,20 +48,38 @@ struct WorkoutView: View {
                         .frame(height: 1)
                         .opacity(0.4)
 
-//                    TextField("RestTime", value: $restTimeRemaining, format: .number)
-                    Text("\(restTimeRemaining)")
-                        .multilineTextAlignment(.center)
-                        .frame(maxWidth: 40)
-                        .padding(3)
-                        .background(RoundedRectangle(cornerRadius: 10).fill( Color(UIColor.secondarySystemBackground)))
-                        .keyboardType(.numberPad)
-                        .font(.footnote)
-                        .fontWeight(.semibold)
-                        .onReceive(timer) { _ in
-                            if restTimerRunning && restTimeRemaining > 0 {
-                                restTimeRemaining -= 1
-                            }
+                    if restTimerRunning {
+                        TimerView(restTimerRunning: $restTimerRunning,
+                                  restTime: selectedWkout.restTimeSec)
+                    }
+                    else {
+                        HStack {
+                            Spacer()
+                            Text("\(selectedWkout.restTimeSec)")
+                                .multilineTextAlignment(.center)
+                                .frame(maxWidth: 40)
+                                .padding(3)
+                                .background(RoundedRectangle(cornerRadius: 10).fill( Color(UIColor.secondarySystemBackground)))
+                                .font(.footnote)
+                                .fontWeight(.semibold)
+                            Spacer()
                         }
+                    }
+                    
+//                    TextField("RestTime", value: $restTimeRemaining, format: .number)
+//                    Text("\(restTimeRemaining)")
+//                        .multilineTextAlignment(.center)
+//                        .frame(maxWidth: 40)
+//                        .padding(3)
+//                        .background(RoundedRectangle(cornerRadius: 10).fill( Color(UIColor.secondarySystemBackground)))
+//                        .keyboardType(.numberPad)
+//                        .font(.footnote)
+//                        .fontWeight(.semibold)
+//                        .onReceive(timer) { _ in
+//                            if restTimerRunning && restTimeRemaining > 0 {
+//                                restTimeRemaining -= 1
+//                            }
+//                        }
                     
                     Rectangle()
                         .frame(height: 1)
@@ -79,7 +89,7 @@ struct WorkoutView: View {
 
                 ExercisesView(exercises: selectedWkout.exercises,
                               restTime : restTime,
-                              restTimeRemainingSec: $restTimeRemaining,
+                              restTimeRemaining: $restTimeRemaining,
                               restTimeRunning: $restTimerRunning)
             }
             .navigationTitle(selectedWkout.name)
@@ -94,7 +104,6 @@ struct WorkoutView: View {
         .onAppear() {
             self.viewModel.setup(self.dbMgr)
             restTime = selectedWkout.restTimeSec
-            restTimeRemaining = selectedWkout.restTimeSec
         }
     }
 }
@@ -106,5 +115,53 @@ struct WorkoutView_Previews: PreviewProvider {
         WorkoutView(isWorkoutSelected: .constant(true))
             .environmentObject(dbMgr)
             .environmentObject(wkout)
+    }
+}
+
+struct TimerView : View {
+    @EnvironmentObject private var dbMgr : DbManager
+
+    @Binding var restTimerRunning : Bool
+    @State var restTime : UInt
+    @State private var restTimeRemaining : Int = 0
+    
+    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+    
+    @State var startTime : Date?
+    
+    var body: some View {
+        VStack {
+            Button {
+                // Stop the timer if pressed
+                restTimerRunning = false
+                restTimeRemaining = Int(restTime)
+            } label: {
+                Text("\(restTimeRemaining)")
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: 40)
+                    .padding(3)
+                    .background(RoundedRectangle(cornerRadius: 10).fill( Color(UIColor.secondarySystemBackground)))
+                    .keyboardType(.numberPad)
+                    .font(.footnote)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.primary)
+                    .onReceive(timer) { _ in
+                        if restTimerRunning {
+                            guard let startTime = dbMgr.getLastSavedRestTimerStartTime() else { return }
+                            restTimeRemaining = Int(startTime.timeIntervalSince(Date.now))
+                            
+                            if restTimeRemaining <= 0 {
+                                restTimeRemaining = Int(restTime)
+                                restTimerRunning = false
+                            }
+                        }
+                    }
+            }
+        }
+        .onAppear() {
+            if !restTimerRunning {
+                restTimeRemaining = Int(restTime)
+            }
+        }
     }
 }

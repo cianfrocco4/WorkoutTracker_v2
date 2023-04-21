@@ -24,4 +24,9 @@ final class SettingsViewModel: ObservableObject {
         guard let mgr = self.dbMgr else { return }
         mgr.installNewDb()
     }
+    
+    func updateDb() {
+        guard let mgr = self.dbMgr else { return }
+        mgr.updateDb()
+    }
 }

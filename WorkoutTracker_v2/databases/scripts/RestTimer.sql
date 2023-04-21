@@ -1,0 +1,1 @@
+CREATE TABLE RestTimer (restTimerStart STRING PRIMARY KEY);

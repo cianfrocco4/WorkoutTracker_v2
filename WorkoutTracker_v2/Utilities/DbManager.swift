@@ -118,7 +118,7 @@ class DbManager : ObservableObject {
                 let restTimeSec = UInt(sqlite3_column_int(stmt, 5)) / (1000000)  // convert USec to Sec
      
                 //adding values to list
-                let exercise = Exercise(id: exerciseId, name: exerciseName, sets: Int(numSets), minReps: Int(minReps), maxReps: Int(maxReps), weight: 0)
+                let exercise = Exercise(id: exerciseId, name: exerciseName, sets: Int(numSets), minReps: Int(minReps), maxReps: Int(maxReps), weight: 0.0)
                 let workoutIndex = workouts.firstIndex(where: {workout in workout.name == workoutName})
                 if (workoutIndex != nil) {
                     workouts[workoutIndex!].exercises.append(exercise)
@@ -280,7 +280,7 @@ class DbManager : ObservableObject {
     
     func getLastTimePerformed( workoutName : String?,
                                exerciseName: String,
-                               setNum: Int) -> (reps : Int, weight: Int, notes: String, date : Date)? {
+                               setNum: Int) -> (reps : Int, weight: Float, notes: String, date : Date)? {
         if isDbOpen {
             var queryStr = "SELECT reps, weight, ExerciseHistory.notes, ExerciseHistory.date FROM WorkoutHistory LEFT JOIN ExerciseHistory ON WorkoutHistory.workoutName = ExerciseHistory.workoutName WHERE exerciseName = '" + exerciseName + "' AND setNum = " + String(setNum)
             if workoutName != nil {
@@ -298,7 +298,7 @@ class DbManager : ObservableObject {
             
             if(sqlite3_step(stmt) == SQLITE_ROW) {
                 let reps = Int(sqlite3_column_int(stmt, 0))
-                let weight = Int(sqlite3_column_int(stmt, 1))
+                let weight = Float(sqlite3_column_double(stmt, 1))
                 let notes = String(cString: sqlite3_column_text(stmt, 2))
                 let dateStr = String(cString: sqlite3_column_text(stmt, 3))
                 
@@ -331,7 +331,7 @@ class DbManager : ObservableObject {
                 var df = DateFormatter()
                 df.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
                 df.dateFormat = "yyyy-MM-dd"
-                let date = df.date(from: dateStr)!
+                guard let date = df.date(from: dateStr) else { return nil }
                 return date
             }
             
@@ -705,5 +705,230 @@ class DbManager : ObservableObject {
         }
         
         return exercises
+    }
+    
+    func executeQuery(queryStr : String) -> Bool {
+        if isDbOpen {
+            var stmt: OpaquePointer?
+            
+            if sqlite3_prepare_v2(db, queryStr, -1, &stmt, nil) != SQLITE_OK{
+                let errmsg = String(cString: sqlite3_errmsg(db)!)
+                print("error preparing: \(errmsg)")
+                return false
+            }
+            else {
+                if sqlite3_step(stmt) != SQLITE_DONE {
+                    print("ERROR could not execute: " + queryStr)
+                    return false
+                }
+                else {
+                    
+                    print("Update db!")
+                    
+                    sqlite3_finalize(stmt)
+                }
+            }
+            
+            return true
+        }
+        
+        return false
+    }
+    
+    func UpdateWeightCol() {
+        if executeQuery(queryStr: "DROP TABLE IF EXISTS tmp_ExerciseHistory") &&
+           executeQuery(queryStr: """
+                                   CREATE TABLE tmp_ExerciseHistory ( workoutName STRING NOT NULL, \
+                                                                      exerciseName STRING NOT NULL,\
+                                                                      setNum INTEGER NOT NULL,\
+                                                                      reps INTEGER NOT NULL,\
+                                                                      weight REAL NOT NULL,\
+                                                                      notes STRING,\
+                                                                      date STRING NOT NULL,\
+                                                                      PRIMARY KEY (workoutName, exerciseName, setNum, date),\
+                                                                      FOREIGN KEY (workoutName) REFERENCES Workout (name)\
+                                                                      FOREIGN KEY (exerciseName) REFERENCES Exercise (name) )
+                                  """) &&
+           executeQuery(queryStr: "INSERT INTO tmp_ExerciseHistory (workoutName, exerciseName, setNum, reps, weight, notes, date) SELECT * FROM ExerciseHistory") &&
+           executeQuery(queryStr: "DROP TABLE IF EXISTS ExerciseHistory") &&
+           executeQuery(queryStr: """
+                                   CREATE TABLE ExerciseHistory ( workoutName STRING NOT NULL,
+                                                                  exerciseName STRING NOT NULL,
+                                                                  setNum INTEGER NOT NULL,
+                                                                  reps INTEGER NOT NULL,
+                                                                  weight REAL NOT NULL,
+                                                                  notes STRING,
+                                                                  date STRING NOT NULL,
+                                                                  PRIMARY KEY (workoutName, exerciseName, setNum, date),
+                                                                  FOREIGN KEY (workoutName) REFERENCES Workout (name)
+                                                                  FOREIGN KEY (exerciseName) REFERENCES Exercise (name) )
+                                  """) &&
+           executeQuery(queryStr: "INSERT INTO ExerciseHistory (workoutName, exerciseName, setNum, reps, weight, notes, date) SELECT * from tmp_ExerciseHistory") &&
+           executeQuery(queryStr: "DROP TABLE IF EXISTS tmp_ExerciseHistory")
+        {
+             print ("Successfully Updated weight col!")
+        }
+        else {
+            print("Failed to update weight col!")
+        }
+    }
+    
+    func AddRestTime() {
+        if executeQuery(queryStr: "ALTER TABLE WorkoutDetails ADD COLUMN restTimeUSec INTEGER DEFAULT 60000000 NOT NULL") {
+            print ("Successfully added rest time col!")
+        }
+        else {
+            print ("Failed to add rest time col!")
+        }
+    }
+    
+    func AddRestTimerTable() {
+        if executeQuery(queryStr: "CREATE TABLE IF NOT EXISTS RestTimer (restTimerStart STRING PRIMARY KEY)") {
+            print ("Successfully added rest timer table!")
+        }
+        else {
+            print ("Failed to add rest timer table!")
+        }
+    }
+
+    
+    func updateDb() {
+        if isDbOpen {
+            AddRestTime()
+            
+            UpdateWeightCol()
+            
+            AddRestTimerTable()
+        }
+    }
+    
+    func dumpDatabase() {
+        if isDbOpen {
+            print("dumping database...")
+            
+            let manager = FileManager.default
+            var documentsURL : URL
+            
+            do {
+                documentsURL = try manager.url(for: .documentDirectory, in: .allDomainsMask, appropriateFor: nil, create: false).appendingPathComponent("WorkoutTracker-dump").appendingPathExtension("sql")
+            } catch {
+                print("Failed to dump database: Could not find documents dir")
+                return
+            }
+
+            var statement: OpaquePointer?
+            var queryStr = ".output " + documentsURL.path()
+            if sqlite3_prepare_v2(db, queryStr, -1, &statement, nil) != SQLITE_OK {
+                let err = String(cString: sqlite3_errmsg(db))
+                print("error building statement: \(err)")
+                return
+            }
+            
+            if sqlite3_step(statement) != SQLITE_DONE {
+                print("Failed to execute output statment")
+                return
+            }
+            
+            queryStr = ".dump"
+            if sqlite3_prepare_v2(db, queryStr, -1, &statement, nil) != SQLITE_OK {
+                let err = String(cString: sqlite3_errmsg(db))
+                print("error building statement: \(err)")
+                return
+            }
+            
+            if sqlite3_step(statement) != SQLITE_DONE {
+                print("Failed to dump database")
+                return
+            }
+            
+            sqlite3_finalize(statement)
+            print("Dumped database!")
+        }
+    }
+    
+    func getLastSavedRestTimerStartTime() -> Date? {
+        if isDbOpen {
+            var queryStr = "SELECT count(*) from RestTimer"
+            var stmt: OpaquePointer?
+            
+            if sqlite3_prepare_v2(db, queryStr, -1, &stmt, nil) != SQLITE_OK{
+                let errmsg = String(cString: sqlite3_errmsg(db)!)
+                print("error preparing: \(errmsg)")
+                return nil
+            }
+            
+            if(sqlite3_step(stmt) == SQLITE_ROW) {
+                let count = Int(sqlite3_column_int(stmt, 0))
+                
+                if count != 1 {
+                    return nil
+                }
+            }
+            
+            queryStr = "SELECT restTimerStart from RestTimer"
+
+            if sqlite3_prepare_v2(db, queryStr, -1, &stmt, nil) != SQLITE_OK{
+                let errmsg = String(cString: sqlite3_errmsg(db)!)
+                print("error preparing: \(errmsg)")
+                return nil
+            }
+            
+            if(sqlite3_step(stmt) == SQLITE_ROW) {
+                let val = sqlite3_column_text(stmt, 0)
+                
+                if val == nil { return nil }
+                
+                let dateStr = String(cString: val!)
+                
+                let df = DateFormatter()
+                df.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
+                df.timeZone = TimeZone.current
+                df.dateFormat = "yyyy-MM-dd HH:mm:ss"
+                df.calendar = Calendar.current
+                let date = df.date(from: dateStr)!
+                return date
+            }
+            
+            sqlite3_finalize(stmt)
+        }
+        
+        return nil
+    }
+    
+    func insertCurrentRestTimerStartTime(restTimeOffset : UInt) -> Date? {
+        if isDbOpen {
+            var queryStr = "SELECT * FROM RestTimer"
+            var stmt: OpaquePointer?
+
+            if sqlite3_prepare_v2(db, queryStr, -1, &stmt, nil) != SQLITE_OK{
+                let errmsg = String(cString: sqlite3_errmsg(db)!)
+                print("error preparing: \(errmsg)")
+                return nil
+            }
+            
+            if(sqlite3_step(stmt) != SQLITE_ROW) {
+                queryStr = "INSERT INTO RestTimer (restTimerStart) VALUES (datetime('now', 'localtime', " + " '+ " + String(restTimeOffset) + " seconds'))"
+            }
+            else {
+                queryStr = "UPDATE RestTimer SET restTimerStart = datetime('now', 'localtime', '+" + String(restTimeOffset) + " seconds')"
+            }
+            
+            if sqlite3_prepare_v2(db, queryStr, -1, &stmt, nil) != SQLITE_OK{
+                let errmsg = String(cString: sqlite3_errmsg(db)!)
+                print("error preparing: \(errmsg)")
+                return nil
+            }
+            
+            if(sqlite3_step(stmt) != SQLITE_DONE) {
+                print("Error running query: " + queryStr)
+                return nil
+            }
+            
+            sqlite3_finalize(stmt)
+            
+            return getLastSavedRestTimerStartTime()
+        }
+        
+        return nil
     }
 }

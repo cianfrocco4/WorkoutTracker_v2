@@ -38,11 +38,26 @@ struct SettingsView: View {
                 }
                 
                 HStack {
+                    Text("Install New Database")
+                        .multilineTextAlignment(.center)
+                        .font(.body)
+                        .fontWeight(.semibold)
+                        .frame(width: 200, height: 30)
+                        .foregroundColor(.primary)
+                        .cornerRadius(10)
+                        .onLongPressGesture() {
+                            print("Install new database clicked")
+                            viewModel.installDb()
+                        }
+                    Spacer()
+                }
+                
+                HStack {
                     Button {
-                        print("Install new database clicked")
-                        viewModel.installDb()
+                        print("Update database clicked")
+                        viewModel.updateDb()
                     } label: {
-                        Text("Install Database")
+                        Text("Update Database")
                             .multilineTextAlignment(.center)
                             .font(.body)
                             .fontWeight(.semibold)

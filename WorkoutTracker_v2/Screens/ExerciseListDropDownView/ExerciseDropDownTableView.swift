@@ -22,8 +22,8 @@ struct ExerciseDropDownTableView: View {
     @Binding var weightArr : [TextBindingManager]
     @Binding var entries : [ExerciseEntry]
     @Binding var notes : String
-    @Binding var restTimeRemainingSec : UInt
     @Binding var restTimeRunning : Bool
+    @Binding var restTimeRemaining : UInt
     
     let formatter: NumberFormatter = {
         let formatter = NumberFormatter()
@@ -34,7 +34,7 @@ struct ExerciseDropDownTableView: View {
     var body: some View {
         VStack {
             VStack {
-                TextField("Notes", text: $notes)
+                TextField("Notes", text: $notes, axis: .vertical)
                     .textFieldStyle(.roundedBorder)
                 
                 HStack {
@@ -111,8 +111,9 @@ struct ExerciseDropDownTableView: View {
                                                    entries: entries,
                                                    notes: notes)
                                     
-                                    restTimeRemainingSec = selectedWkout.restTimeSec //workout.restTimeSec
                                     restTimeRunning = true  // start the rest time timer
+                                    restTimeRemaining = selectedWkout.restTimeSec
+                                    let _ = dbMgr.insertCurrentRestTimerStartTime(restTimeOffset: selectedWkout.restTimeSec)
                                 }
                                 
                                 entries[index].saved = !(entries[index].saved)
@@ -189,8 +190,8 @@ struct ExerciseDropDownTableView_Previews: PreviewProvider {
                                   weightArr: .constant(MockData.sampleRepsWeightArr),
                                   entries: .constant(MockData.sampleEntries),
                                   notes: .constant(""),
-                                  restTimeRemainingSec: .constant(60),
-                                  restTimeRunning: .constant(false))
+                                  restTimeRunning: .constant(false),
+                                  restTimeRemaining: .constant(60))
             .environmentObject(dbMgr)
             .environmentObject(MockData.sampleWorkout1)
     }
@@ -207,5 +208,16 @@ struct CustomTextField: View {
             self.value = $0; self.owner = Int($0) ?? 0;  // transfer the value
         })
         return TextField(label, text: text)
+    }
+}
+
+struct MyTextFieldStyle: TextFieldStyle {
+    func _body(configuration: TextField<Self._Label>) -> some View {
+        configuration
+        .padding(30)
+        .background(
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .stroke(Color.red, lineWidth: 3)
+        ).padding()
     }
 }

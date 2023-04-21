@@ -13,7 +13,7 @@ struct Exercise: Decodable, Identifiable {
     var sets    : Int
     var minReps : Int
     var maxReps : Int
-    var weight  : Int
+    var weight  : Float
 }
 
 extension MockData {

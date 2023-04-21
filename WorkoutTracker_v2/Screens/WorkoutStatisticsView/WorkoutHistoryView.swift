@@ -19,7 +19,13 @@ struct WorkoutHistoryView: View {
             Button {
                 viewModel.isShowingWorkoutHistoryDetails = false
             } label:{
-                Text("Coming soon!")
+                if viewModel.selectedWkoutHistory != nil {
+                    WorkoutHistoryDetailsView(wkoutHistory: viewModel.selectedWkoutHistory!,
+                                              isShowingWorkoutHistoryDetails: $viewModel.isShowingWorkoutHistoryDetails)
+                }
+                else {
+                    Text("Coming soon!")
+                }
             }
         }
         else {
@@ -29,7 +35,8 @@ struct WorkoutHistoryView: View {
                         ForEach (0..<self.workouts.count) { idx in
                             DateNameCheckView(date: workouts[idx].date,
                                               isShowingWorkoutHistoryDetails: $viewModel.isShowingWorkoutHistoryDetails,
-                                              workout: $workouts[idx].workout)
+                                              workout: $workouts[idx].workout,
+                                              selectedWkoutHistory: $viewModel.selectedWkoutHistory)
                             .padding(.trailing, -5)
                             .id(idx)
                         }
@@ -60,6 +67,7 @@ struct DateNameCheckView: View {
     @State var date : Date
     @Binding var isShowingWorkoutHistoryDetails : Bool
     @Binding var workout : Workout?
+    @Binding var selectedWkoutHistory : Workout?
     
     static let shortDateFormat: DateFormatter = {
         let formatter = DateFormatter()
@@ -84,6 +92,7 @@ struct DateNameCheckView: View {
     var body: some View {
         Button {
             isShowingWorkoutHistoryDetails = true
+            selectedWkoutHistory = workout
         } label: {
             VStack {
                 Text(DateNameCheckView.getDateStr(date: date,
