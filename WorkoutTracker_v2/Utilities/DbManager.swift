@@ -96,7 +96,7 @@ class DbManager : ObservableObject {
     func getWorkouts() -> [Workout] {
         var workouts : [Workout] = []
         if isDbOpen {
-            let queryString = "SELECT * from WorkoutDetails"
+            var queryString = "SELECT * from WorkoutDetails"
             var stmt: OpaquePointer?
             
             //preparing the query
@@ -128,6 +128,24 @@ class DbManager : ObservableObject {
                     workoutId += 1
                 }
                 exerciseId += 1
+            }
+            
+            queryString = "SELECT * FROM Workout"
+            
+            //preparing the query
+            if sqlite3_prepare_v2(db, queryString, -1, &stmt, nil) != SQLITE_OK{
+                let errmsg = String(cString: sqlite3_errmsg(db)!)
+                print("error preparing insert: \(errmsg)")
+                return workouts
+            }
+            
+            while(sqlite3_step(stmt) == SQLITE_ROW){
+                let workoutName = String(cString: sqlite3_column_text(stmt, 0))
+                // Add workouts that don't have any exercises yet (from the Workout table)
+                if !workouts.contains(where: { $0.name == workoutName }) {
+                    workouts.append(Workout(id: workoutId, name: workoutName, exercises: [], restTimeSec: 60))
+                    workoutId += 1
+                }
             }
             
             do { sqlite3_finalize(stmt) }
@@ -491,7 +509,7 @@ class DbManager : ObservableObject {
     
     func addNewWorkout(name : String) {
         if(isDbOpen) {
-            let queryStr = "INSERT INTO Workout (name) VALUES ('" + name + "')"
+            var queryStr = "INSERT INTO Workout (name) VALUES ('" + name + "')"
             
             var stmt: OpaquePointer?
 
@@ -507,7 +525,50 @@ class DbManager : ObservableObject {
                 
                 print("Added new workout!")
                 
+                queryStr = "INSERT INTO Workout (name) VALUES ('" + name + "')"
+                
                 sqlite3_finalize(stmt)
+            }
+        }
+    }
+    
+    func updateWorkoutName(oldWorkoutName : String,
+                           newWorkoutName : String) {
+        if(isDbOpen) {
+            var queryStr = "UPDATE Workout SET name ='" + newWorkoutName + "' WHERE name = '" + oldWorkoutName + "'"
+            
+            var stmt: OpaquePointer?
+
+            if sqlite3_prepare_v2(db, queryStr, -1, &stmt, nil) != SQLITE_OK{
+                let errmsg = String(cString: sqlite3_errmsg(db)!)
+                print("error preparing: \(errmsg)")
+            }
+            else {
+                if sqlite3_step(stmt) != SQLITE_DONE {
+                    print("ERROR could not execute: " + queryStr)
+                }
+                else {
+                    print("Updated workout!")
+                    
+                    sqlite3_finalize(stmt)
+                }
+            }
+            
+            queryStr = "UPDATE WorkoutDetails SET workoutName ='" + newWorkoutName + "' WHERE workoutName = '" + oldWorkoutName + "'"
+
+            if sqlite3_prepare_v2(db, queryStr, -1, &stmt, nil) != SQLITE_OK{
+                let errmsg = String(cString: sqlite3_errmsg(db)!)
+                print("error preparing: \(errmsg)")
+            }
+            else {
+                if sqlite3_step(stmt) != SQLITE_DONE {
+                    print("ERROR could not execute: " + queryStr)
+                }
+                else {
+                    print("Updated workout details!")
+                    
+                    sqlite3_finalize(stmt)
+                }
             }
         }
     }

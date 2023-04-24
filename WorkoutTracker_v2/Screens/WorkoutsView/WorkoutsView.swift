@@ -37,6 +37,12 @@ struct WorkoutsView: View {
                                 }
                             }
                             .swipeActions {
+                                Button("Edit") {
+                                    print("Edit Workout: " + workout.name)
+                                    viewModel.setEditWorkout(workoutName: workout.name)
+                                }
+                                .tint(.yellow)
+                                
                                 Button("Remove") {                                    
                                     print("Remove Workout: " + workout.name)
                                     viewModel.removeWorkout(workoutName: workout.name)
@@ -64,9 +70,11 @@ struct WorkoutsView: View {
                 .navigationTitle("Workouts 💪")
             }
             .blur(radius: (viewModel.isWorkoutSelected ||
-                           viewModel.isShowingAddNewWorkout) ? 20 : 0)
+                           viewModel.isShowingAddNewWorkout ||
+                           viewModel.isShowingEditWorkout) ? 20 : 0)
             .disabled(viewModel.isWorkoutSelected ||
-                      viewModel.isShowingAddNewWorkout)
+                      viewModel.isShowingAddNewWorkout ||
+                      viewModel.isShowingEditWorkout)
             
             if viewModel.isWorkoutSelected {
                 WorkoutView(isWorkoutSelected: $viewModel.isWorkoutSelected)
@@ -75,12 +83,20 @@ struct WorkoutsView: View {
                     viewModel.refreshWorkouts()
                 })
             }
-            
-            if viewModel.isShowingAddNewWorkout {
+            else if viewModel.isShowingAddNewWorkout {
                 NewWorkoutView(isShowingNewWorkout: $viewModel.isShowingAddNewWorkout)
-                    .onDisappear(perform: {
-                        viewModel.refreshWorkouts()
-                    })
+                .onDisappear(perform: {
+                    viewModel.refreshWorkouts()
+                })
+            }
+            else if viewModel.isShowingEditWorkout &&
+                    viewModel.editWorkoutIdx != nil {
+                EditWorkoutView(workout: $viewModel.workouts[viewModel.editWorkoutIdx!],
+                                isShowingEditWorkout: $viewModel.isShowingEditWorkout,
+                                workouts: viewModel.workouts)
+                .onDisappear() {
+                    viewModel.refreshWorkouts()
+                }
             }
         }
         .onAppear {

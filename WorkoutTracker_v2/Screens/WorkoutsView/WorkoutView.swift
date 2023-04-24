@@ -18,79 +18,74 @@ struct WorkoutView: View {
     @State private var restTime : UInt = 60
     @State private var restTimerRunning = false
     @State private var restTimeRemaining : UInt = 60
+    
+    @State private var workoutTime : UInt = 0
+    @State private var workoutTimerRunning : Bool = false
         
     var body: some View {
         NavigationView {
             VStack {
-                HStack {
-                    Text("Rest time:")
-                    TextField("RestTime", value: $restTime, format: .number)
-                        .onChange(of: restTime) {
-                            print("Rest time changed to: " + String($0))
-                            restTime = $0
-                            selectedWkout.restTimeSec = $0
-                            viewModel.saveWorkout(workout: selectedWkout)
-                        }
-                        .multilineTextAlignment(.center)
-                        .frame(maxWidth: 40)
-                        .padding(3)
-                        .background(RoundedRectangle(cornerRadius: 10).fill( Color(UIColor.secondarySystemBackground)))
-                        .keyboardType(.numberPad)
-                        .font(.footnote)
-                        .fontWeight(.semibold)
-
-                    Spacer()
-                }
-                .padding(.leading, 20)
+                // TODO - disabling for now
+//                HStack {
+//                    Button {
+//                        workoutTimerRunning = !workoutTimerRunning
+//                    } label: {
+//                        Text(workoutTimerRunning ? "Stop Workout" : "Start Workout")
+//                    }
+//                    .multilineTextAlignment(.center)
+//                    .frame(maxWidth: 100)
+//                    .padding(6)
+//                    .background(RoundedRectangle(cornerRadius: 10).fill( workoutTimerRunning ?  Color.red.opacity(0.5) : Color.green.opacity(0.5)))
+//                    .keyboardType(.numberPad)
+//                    .font(.subheadline)
+//                    .fontWeight(.semibold)
+//                    .foregroundColor(.primary)
+//                }
+//                .padding(.leading, 20)
+//                .padding([.top, .bottom])
                 
-                HStack {
-                    Rectangle()
-                        .frame(height: 1)
-                        .opacity(0.4)
-
-                    if restTimerRunning {
-                        TimerView(restTimerRunning: $restTimerRunning,
-                                  restTime: selectedWkout.restTimeSec)
+                VStack {
+                    
+                    HStack {
+                        Text("Rest time:")
+                        TextField("RestTime", value: $restTime, format: .number)
+                            .onChange(of: restTime) {
+                                print("Rest time changed to: " + String($0))
+                                restTime = $0
+                                selectedWkout.restTimeSec = $0
+                                viewModel.saveWorkout(workout: selectedWkout)
+                            }
+                            .multilineTextAlignment(.center)
+                            .frame(maxWidth: 40)
+                            .padding(3)
+                            .background(RoundedRectangle(cornerRadius: 10).fill( Color(UIColor.secondarySystemBackground)))
+                            .keyboardType(.numberPad)
+                            .font(.footnote)
+                            .fontWeight(.semibold)
+                        
+                        Spacer()
                     }
-                    else {
-                        HStack {
-                            Spacer()
-                            Text("\(selectedWkout.restTimeSec)")
-                                .multilineTextAlignment(.center)
-                                .frame(maxWidth: 40)
-                                .padding(3)
-                                .background(RoundedRectangle(cornerRadius: 10).fill( Color(UIColor.secondarySystemBackground)))
-                                .font(.footnote)
-                                .fontWeight(.semibold)
-                            Spacer()
-                        }
+                    .padding(.leading, 20)
+                    
+                    HStack {
+                        Rectangle()
+                            .frame(height: 1)
+                            .opacity(0.4)
+                        
+                        TimerView(timerRunning: $restTimerRunning,
+                                  startTimeRemaining: selectedWkout.restTimeSec)
+                        
+                        Rectangle()
+                            .frame(height: 1)
+                            .opacity(0.4)
+                        
                     }
                     
-//                    TextField("RestTime", value: $restTimeRemaining, format: .number)
-//                    Text("\(restTimeRemaining)")
-//                        .multilineTextAlignment(.center)
-//                        .frame(maxWidth: 40)
-//                        .padding(3)
-//                        .background(RoundedRectangle(cornerRadius: 10).fill( Color(UIColor.secondarySystemBackground)))
-//                        .keyboardType(.numberPad)
-//                        .font(.footnote)
-//                        .fontWeight(.semibold)
-//                        .onReceive(timer) { _ in
-//                            if restTimerRunning && restTimeRemaining > 0 {
-//                                restTimeRemaining -= 1
-//                            }
-//                        }
-                    
-                    Rectangle()
-                        .frame(height: 1)
-                        .opacity(0.4)
-
+                    ExercisesView(exercises: selectedWkout.exercises,
+                                  restTime : restTime,
+                                  restTimeRemaining: $restTimeRemaining,
+                                  restTimeRunning: $restTimerRunning)
                 }
-
-                ExercisesView(exercises: selectedWkout.exercises,
-                              restTime : restTime,
-                              restTimeRemaining: $restTimeRemaining,
-                              restTimeRunning: $restTimerRunning)
             }
             .navigationTitle(selectedWkout.name)
         }
@@ -121,9 +116,9 @@ struct WorkoutView_Previews: PreviewProvider {
 struct TimerView : View {
     @EnvironmentObject private var dbMgr : DbManager
 
-    @Binding var restTimerRunning : Bool
-    @State var restTime : UInt
-    @State private var restTimeRemaining : Int = 0
+    @Binding var timerRunning : Bool
+    @State var startTimeRemaining : UInt
+    @State private var timeRemaining : Int = 0
     
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
@@ -133,10 +128,10 @@ struct TimerView : View {
         VStack {
             Button {
                 // Stop the timer if pressed
-                restTimerRunning = false
-                restTimeRemaining = Int(restTime)
+                timerRunning = false
+                timeRemaining = Int(startTimeRemaining)
             } label: {
-                Text("\(restTimeRemaining)")
+                Text("\(timeRemaining)")
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: 40)
                     .padding(3)
@@ -146,21 +141,21 @@ struct TimerView : View {
                     .fontWeight(.semibold)
                     .foregroundColor(.primary)
                     .onReceive(timer) { _ in
-                        if restTimerRunning {
+                        if timerRunning {
                             guard let startTime = dbMgr.getLastSavedRestTimerStartTime() else { return }
-                            restTimeRemaining = Int(startTime.timeIntervalSince(Date.now))
+                            timeRemaining = Int(startTime.timeIntervalSince(Date.now))
                             
-                            if restTimeRemaining <= 0 {
-                                restTimeRemaining = Int(restTime)
-                                restTimerRunning = false
+                            if timeRemaining <= 0 {
+                                timeRemaining = Int(startTimeRemaining)
+                                timerRunning = false
                             }
                         }
                     }
             }
         }
         .onAppear() {
-            if !restTimerRunning {
-                restTimeRemaining = Int(restTime)
+            if !timerRunning {
+                timeRemaining = Int(startTimeRemaining)
             }
         }
     }

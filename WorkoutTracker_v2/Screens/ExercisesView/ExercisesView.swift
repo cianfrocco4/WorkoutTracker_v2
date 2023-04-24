@@ -146,6 +146,7 @@ struct ExercisesView: View {
                                 isShowingSwapExer: $viewModel.isShowingSwapExer,
                                 exercises: $exercises,
                                 swapIdx: $viewModel.swapIdx)
+                .environmentObject(selectedWkout)
             }
         }
         .onAppear {

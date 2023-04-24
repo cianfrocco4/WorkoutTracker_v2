@@ -46,8 +46,10 @@ struct NewWorkoutView: View {
                 
                 HStack {
                     Button {
-                        viewModel.addNewWorkout()
-                        isShowingNewWorkout = false
+                        if viewModel.newWorkout.name != "" {
+                            viewModel.addNewWorkout()
+                            isShowingNewWorkout = false
+                        }
                     } label: {
                         Text("Save")
                             .multilineTextAlignment(.center)
@@ -83,6 +85,9 @@ struct NewWorkoutView: View {
                                 exercises: $viewModel.newWorkout.exercises,
                                 swapIdx: .constant(nil))
             }
+        }
+        .onAppear() {
+            self.viewModel.setup(self.dbMgr)
         }
     }
 }

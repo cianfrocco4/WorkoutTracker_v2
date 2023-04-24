@@ -16,6 +16,8 @@ final class WorkoutsViewModel: ObservableObject {
     @Published var isWorkoutSelected = false
     @Published var selectedWorkout : Workout?
     @Published var isShowingAddNewWorkout = false
+    @Published var isShowingEditWorkout = false
+    @Published var editWorkoutIdx : Int?
     
     var selectedWorkoutBinding: Binding<Workout> {
         Binding {
@@ -72,5 +74,10 @@ final class WorkoutsViewModel: ObservableObject {
         guard let mgr = self.dbMgr else { return [] }
         let workoutHistory = mgr.getLastDaysPerformed(days: days)
         return workoutHistory
+    }
+    
+    func setEditWorkout(workoutName : String) {
+        self.isShowingEditWorkout = true
+        self.editWorkoutIdx = workouts.firstIndex(where: { $0.name == workoutName } )
     }
 }

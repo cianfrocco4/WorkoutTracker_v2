@@ -15,15 +15,25 @@ struct WorkoutHistoryDetailsView: View {
     var body: some View {
         VStack {
             Button {
+                print("Deleting workout history")
+            } label: {
+                Text("Delete")
+            }
+            
+            Button {
                 isShowingWorkoutHistoryDetails = false
             } label: {
-                Text("Coming soon!")
-                //            Text(wkoutHistory.name)
-                //            ForEach(wkoutHistory.exercises) { e in
-                //                Text("\(e.name)")
-                //            }
+                Text("Ok")
+                    .multilineTextAlignment(.center)
+                    .font(.body)
+                    .fontWeight(.semibold)
+                    .frame(width: 130, height: 30)
+                    .foregroundColor(.primary)
+                    .cornerRadius(10)
             }
+            .background(Color(UIColor.tertiarySystemBackground))
         }
+        .buttonStyle(.bordered)
     }
 }
 

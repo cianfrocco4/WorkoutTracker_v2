@@ -21,7 +21,7 @@ final class NewWorkoutViewModel: ObservableObject {
     func addNewWorkout() {
         guard let mgr = dbMgr else { return }
             
-        mgr.addNewWorkout(name : newWorkoutName)
+        mgr.addNewWorkout(name : newWorkout.name)
     }
     
     func loadDeletedWorkout() {
