@@ -18,6 +18,8 @@ struct ExercisesView: View {
     @State var restTime : UInt
     @Binding var restTimeRemaining : UInt
     @Binding var restTimeRunning : Bool
+    @Binding var isShowingAddNewExer : Bool
+    @Binding var isShowingSwapExer : Bool
         
     var body: some View {
         ZStack {
@@ -75,7 +77,7 @@ struct ExercisesView: View {
                                     let idx = exercises.firstIndex(where: { $0.name == exercise.name })
                                     
                                     if (idx != nil) {
-                                        viewModel.isShowingSwapExer = true
+                                        isShowingSwapExer = true
                                         viewModel.swapIdx = idx!
                                     }
                                 }
@@ -120,7 +122,7 @@ struct ExercisesView: View {
                     HStack {
                         Spacer()
                         Button {
-                            viewModel.addNewExerciseClicked()
+                            isShowingAddNewExer = !isShowingAddNewExer
                         } label: {
                             Text("Add new exercise")
                                 .multilineTextAlignment(.center)
@@ -135,15 +137,15 @@ struct ExercisesView: View {
                     }
                 }
             }
-            .blur(radius: viewModel.isShwoingAddNewExer ||
-                          viewModel.isShowingSwapExer ? 20 : 0)
-            .disabled(viewModel.isShwoingAddNewExer ||
-                      viewModel.isShowingSwapExer)
+            .blur(radius: isShowingAddNewExer ||
+                          isShowingSwapExer ? 20 : 0)
+            .disabled(isShowingAddNewExer ||
+                      isShowingSwapExer)
             
-            if (viewModel.isShwoingAddNewExer ||
-                viewModel.isShowingSwapExer) {
-                NewExerciseView(isShwoingAddNewExer: $viewModel.isShwoingAddNewExer,
-                                isShowingSwapExer: $viewModel.isShowingSwapExer,
+            if (isShowingAddNewExer ||
+                isShowingSwapExer) {
+                NewExerciseView(isShwoingAddNewExer: $isShowingAddNewExer,
+                                isShowingSwapExer: $isShowingSwapExer,
                                 exercises: $exercises,
                                 swapIdx: $viewModel.swapIdx)
                 .environmentObject(selectedWkout)
@@ -165,7 +167,9 @@ struct ExercisesView_Previews: PreviewProvider {
         ExercisesView(exercises: MockData.sampleExercises,
                       restTime: 60,
                       restTimeRemaining: .constant(60),
-                      restTimeRunning: .constant(false))
+                      restTimeRunning: .constant(false),
+                      isShowingAddNewExer: .constant(false),
+                      isShowingSwapExer: .constant(false))
             .environmentObject(dbMgr)
             .environmentObject(MockData.sampleWorkout1)
     }

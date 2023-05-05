@@ -17,8 +17,6 @@ final class ExercisesViewModel: ObservableObject {
     @Published var weightArr : [TextBindingManager] = []
     @Published var selectedExercise : Exercise?
     @Published var exerciseEntries : [ExerciseEntry] = []
-    @Published var isShwoingAddNewExer = false
-    @Published var isShowingSwapExer = false
     @Published var swapIdx : Int?
     @Published var notes : String = ""
     
@@ -130,10 +128,6 @@ final class ExercisesViewModel: ObservableObject {
         else {
             return false
         }
-    }
-    
-    func addNewExerciseClicked() {
-        isShwoingAddNewExer = !isShwoingAddNewExer
     }
     
     func getColorForExercise(exercise: Exercise) -> Color {

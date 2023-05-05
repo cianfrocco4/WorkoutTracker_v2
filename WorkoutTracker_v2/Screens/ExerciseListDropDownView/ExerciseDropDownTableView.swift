@@ -114,6 +114,35 @@ struct ExerciseDropDownTableView: View {
                                     restTimeRunning = true  // start the rest time timer
                                     restTimeRemaining = selectedWkout.restTimeSec
                                     let _ = dbMgr.insertCurrentRestTimerStartTime(restTimeOffset: selectedWkout.restTimeSec)
+                                    
+                                    let center = UNUserNotificationCenter.current()
+
+                                    let addRequest = {
+                                        let content = UNMutableNotificationContent()
+                                        content.title = "Rest time is complete!"
+                                        content.subtitle = ""
+                                        content.sound = UNNotificationSound.default
+
+                                        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: TimeInterval(selectedWkout.restTimeSec), repeats: false)
+
+                                        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
+                                                                                
+                                        center.add(request)
+                                    }
+                                    
+                                    center.getNotificationSettings { settings in
+                                        if settings.authorizationStatus == .authorized {
+                                            addRequest()
+                                        } else {
+                                            center.requestAuthorization(options: [.alert, .badge, .sound]) { success, error in
+                                                if success {
+                                                    addRequest()
+                                                } else {
+                                                    print("D'oh")
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                                 
                                 entries[index].saved = !(entries[index].saved)

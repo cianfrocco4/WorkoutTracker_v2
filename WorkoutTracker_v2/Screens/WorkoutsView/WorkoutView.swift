@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UserNotifications
 
 struct WorkoutView: View {
     @EnvironmentObject private var dbMgr : DbManager
@@ -21,6 +22,8 @@ struct WorkoutView: View {
     
     @State private var workoutTime : UInt = 0
     @State private var workoutTimerRunning : Bool = false
+    @State private var isShowingAddNewExer : Bool = false
+    @State private var isShowingSwapExer : Bool = false
         
     var body: some View {
         NavigationView {
@@ -46,45 +49,51 @@ struct WorkoutView: View {
                 
                 VStack {
                     
-                    HStack {
-                        Text("Rest time:")
-                        TextField("RestTime", value: $restTime, format: .number)
-                            .onChange(of: restTime) {
-                                print("Rest time changed to: " + String($0))
-                                restTime = $0
-                                selectedWkout.restTimeSec = $0
-                                viewModel.saveWorkout(workout: selectedWkout)
-                            }
-                            .multilineTextAlignment(.center)
-                            .frame(maxWidth: 40)
-                            .padding(3)
-                            .background(RoundedRectangle(cornerRadius: 10).fill( Color(UIColor.secondarySystemBackground)))
-                            .keyboardType(.numberPad)
-                            .font(.footnote)
-                            .fontWeight(.semibold)
+                    VStack {
+                        HStack {
+                            Text("Rest time:")
+                            TextField("RestTime", value: $restTime, format: .number)
+                                .onChange(of: restTime) {
+                                    print("Rest time changed to: " + String($0))
+                                    restTime = $0
+                                    selectedWkout.restTimeSec = $0
+                                    viewModel.saveWorkout(workout: selectedWkout)
+                                }
+                                .multilineTextAlignment(.center)
+                                .frame(maxWidth: 40)
+                                .padding(3)
+                                .background(RoundedRectangle(cornerRadius: 10).fill( Color(UIColor.secondarySystemBackground)))
+                                .keyboardType(.numberPad)
+                                .font(.footnote)
+                                .fontWeight(.semibold)
+                            
+                            Spacer()
+                        }
+                        .padding(.leading, 20)
                         
-                        Spacer()
+                        HStack {
+                            Rectangle()
+                                .frame(height: 1)
+                                .opacity(0.4)
+                            
+                            TimerView(timerRunning: $restTimerRunning,
+                                      startTimeRemaining: selectedWkout.restTimeSec)
+                            
+                            Rectangle()
+                                .frame(height: 1)
+                                .opacity(0.4)
+                            
+                        }
                     }
-                    .padding(.leading, 20)
-                    
-                    HStack {
-                        Rectangle()
-                            .frame(height: 1)
-                            .opacity(0.4)
-                        
-                        TimerView(timerRunning: $restTimerRunning,
-                                  startTimeRemaining: selectedWkout.restTimeSec)
-                        
-                        Rectangle()
-                            .frame(height: 1)
-                            .opacity(0.4)
-                        
-                    }
+                    .blur(radius: isShowingAddNewExer || isShowingSwapExer ? 20 : 0)
+                    .disabled(isShowingAddNewExer || isShowingSwapExer)
                     
                     ExercisesView(exercises: selectedWkout.exercises,
                                   restTime : restTime,
                                   restTimeRemaining: $restTimeRemaining,
-                                  restTimeRunning: $restTimerRunning)
+                                  restTimeRunning: $restTimerRunning,
+                                  isShowingAddNewExer: $isShowingAddNewExer,
+                                  isShowingSwapExer: $isShowingSwapExer)
                 }
             }
             .navigationTitle(selectedWkout.name)
@@ -95,9 +104,23 @@ struct WorkoutView: View {
             } label: {
                 XDismissButton()
             }
+            .blur(radius: isShowingAddNewExer || isShowingSwapExer ? 20 : 0)
+            .disabled(isShowingAddNewExer || isShowingSwapExer)
         }
         .onAppear() {
             self.viewModel.setup(self.dbMgr)
+            
+            let startTime = dbMgr.getLastSavedRestTimerStartTime()
+            
+            // Check if rest timer is running
+            if(startTime != nil) {
+                let timeRemaining = Int(startTime!.timeIntervalSince(Date.now))
+                
+                if timeRemaining > 0 {
+                    restTimerRunning = true
+                }
+            }
+                
             restTime = selectedWkout.restTimeSec
         }
     }
@@ -120,7 +143,7 @@ struct TimerView : View {
     @State var startTimeRemaining : UInt
     @State private var timeRemaining : Int = 0
     
-    let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+    let timer = Timer.publish(every: 0.1, on: .main, in: .common).autoconnect()
     
     @State var startTime : Date?
     
@@ -129,7 +152,7 @@ struct TimerView : View {
             Button {
                 // Stop the timer if pressed
                 timerRunning = false
-                timeRemaining = Int(startTimeRemaining)
+                timeRemaining = 0
             } label: {
                 Text("\(timeRemaining)")
                     .multilineTextAlignment(.center)
@@ -146,7 +169,7 @@ struct TimerView : View {
                             timeRemaining = Int(startTime.timeIntervalSince(Date.now))
                             
                             if timeRemaining <= 0 {
-                                timeRemaining = Int(startTimeRemaining)
+                                timeRemaining = 0
                                 timerRunning = false
                             }
                         }

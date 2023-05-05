@@ -12,9 +12,37 @@ struct SettingsView: View {
             
     @EnvironmentObject var dbMgr : DbManager
     
+    @Binding var useSystemBackgroundColor : Bool
+    
+    @Binding var colorSelection : ColorScheme
+    
     var body: some View {
         NavigationView {
             VStack {
+                
+                Toggle(isOn: $useSystemBackgroundColor, label: {
+                    Text("Use System Background Color")
+                        .multilineTextAlignment(.center)
+                        .font(.body)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.primary)
+                })
+                .onChange(of: useSystemBackgroundColor) { val in
+                    viewModel.updateUseSystemBackgroundSetting(val: val)
+                }
+                .padding([.leading, .trailing])
+                
+                Picker (selection: $colorSelection, label: Text("Color")) {
+                    Text("Light").tag(ColorScheme.light)
+                    Text("Dark").tag(ColorScheme.dark)
+                }
+                .onChange(of: colorSelection) { val in
+                    viewModel.updateBackgroundColorSetting(val: val)
+                }
+                .pickerStyle(.segmented)
+                .disabled(useSystemBackgroundColor)
+                .blur(radius: useSystemBackgroundColor ? 0.5 : 0)
+
                 HStack {
                     Button {
                         print("Export database clicked")
@@ -85,7 +113,8 @@ struct SettingsView_Previews: PreviewProvider {
     static let dbMgr = DbManager(db_path: "WorkoutTracker.sqlite")
 
     static var previews: some View {
-        SettingsView()
+        SettingsView(useSystemBackgroundColor: .constant(true),
+                     colorSelection: .constant(.dark))
             .environmentObject(dbMgr)
     }
 }

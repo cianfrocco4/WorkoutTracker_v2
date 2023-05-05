@@ -49,6 +49,7 @@
 		92CEBD5C29C7EB910059B8FA /* NewWorkoutViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92CEBD5B29C7EB910059B8FA /* NewWorkoutViewModel.swift */; };
 		92CEBD5E29CDF0690059B8FA /* WorkoutStatisticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92CEBD5D29CDF0690059B8FA /* WorkoutStatisticsView.swift */; };
 		92CEF2E42999550B00ED5DBA /* Color+Ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92CEF2E32999550B00ED5DBA /* Color+Ext.swift */; };
+		92D9552F2A0595C3004C9D1D /* SearchBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92D9552E2A0595C3004C9D1D /* SearchBar.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -95,6 +96,7 @@
 		92CEBD5B29C7EB910059B8FA /* NewWorkoutViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewWorkoutViewModel.swift; sourceTree = "<group>"; };
 		92CEBD5D29CDF0690059B8FA /* WorkoutStatisticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutStatisticsView.swift; sourceTree = "<group>"; };
 		92CEF2E32999550B00ED5DBA /* Color+Ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+Ext.swift"; sourceTree = "<group>"; };
+		92D9552E2A0595C3004C9D1D /* SearchBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchBar.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -202,6 +204,7 @@
 			isa = PBXGroup;
 			children = (
 				92CEF2EC2999772400ED5DBA /* Buttons */,
+				92D9552E2A0595C3004C9D1D /* SearchBar.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -424,6 +427,7 @@
 				92991A3429D9C37400579542 /* WorkoutHistory.swift in Sources */,
 				92991A3629D9C39800579542 /* ExerciseHistoryData.swift in Sources */,
 				92CEBD5629B56B6D0059B8FA /* NewExerciseView.swift in Sources */,
+				92D9552F2A0595C3004C9D1D /* SearchBar.swift in Sources */,
 				92991A2029CF30AD00579542 /* WorkoutHistoryView.swift in Sources */,
 				92991A2929D64F9200579542 /* WorkoutHistoryDetailsView.swift in Sources */,
 			);
@@ -553,7 +557,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_ASSET_PATHS = "\"WorkoutTracker_v2/Preview Content\"";
 				DEVELOPMENT_TEAM = N7HAUF9TT9;
 				ENABLE_PREVIEWS = YES;
@@ -583,7 +587,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_ASSET_PATHS = "\"WorkoutTracker_v2/Preview Content\"";
 				DEVELOPMENT_TEAM = N7HAUF9TT9;
 				ENABLE_PREVIEWS = YES;
