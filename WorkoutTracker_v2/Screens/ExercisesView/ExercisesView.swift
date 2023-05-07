@@ -100,10 +100,7 @@ struct ExercisesView: View {
                             
                             if viewModel.isExerciseSelected &&
                                 viewModel.selectedExercise!.id == exercise.id {
-                                //                    ExerciseListDropDownView(workout: workout,
-                                //                                             exercise: viewModel.selectedExercise!,
-                                //                                             repsArr: $viewModel.repsArr,
-                                //                                             weightArr: $viewModel.weightArr)
+                                
                                 ExerciseDropDownTableView(exercise: viewModel.selectedExercise!,
                                                           restTime: restTime,
                                                           repsArr: $viewModel.repsArr,
@@ -112,8 +109,6 @@ struct ExercisesView: View {
                                                           notes: $viewModel.notes,
                                                           restTimeRunning: $restTimeRunning,
                                                           restTimeRemaining: $restTimeRemaining)
-                                .frame(width: 325,
-                                       height: 330)
                             }
                         }
                     }

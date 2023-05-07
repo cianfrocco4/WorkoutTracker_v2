@@ -14,10 +14,18 @@ struct WorkoutHistoryDetailsView: View {
     
     var body: some View {
         VStack {
+            Text("\(wkoutHistory.name)")
+                .font(.title3)
             Button {
                 print("Deleting workout history")
             } label: {
                 Text("Delete")
+                    .multilineTextAlignment(.center)
+                    .font(.body)
+                    .fontWeight(.semibold)
+                    .frame(width: 130, height: 30)
+                    .foregroundColor(.primary)
+                    .cornerRadius(10)
             }
             
             Button {
@@ -31,9 +39,14 @@ struct WorkoutHistoryDetailsView: View {
                     .foregroundColor(.primary)
                     .cornerRadius(10)
             }
-            .background(Color(UIColor.tertiarySystemBackground))
         }
         .buttonStyle(.bordered)
+        .padding()
+        .background(RoundedRectangle(cornerRadius: 20).fill( Color(UIColor.tertiarySystemBackground)))
+        .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(Color.gray.opacity(0.1), lineWidth: 4)
+            )
     }
 }
 

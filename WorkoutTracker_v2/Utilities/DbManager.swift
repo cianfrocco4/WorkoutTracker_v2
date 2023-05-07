@@ -859,7 +859,7 @@ class DbManager : ObservableObject {
             
             UpdateWeightCol()
             
-            AddRestTimerTable()
+            AddRestTimerTable()            
         }
     }
     

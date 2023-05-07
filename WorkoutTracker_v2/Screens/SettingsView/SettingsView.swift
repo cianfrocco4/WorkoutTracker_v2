@@ -16,6 +16,12 @@ struct SettingsView: View {
     
     @Binding var colorSelection : ColorScheme
     
+    // Key for system background color in NSUserDefaults
+    static let useSystemBackgroundKey = "useSystemBackground"
+    
+    // Key for app background color in NSUserDefaults
+    static let useDarkMode = "useDarkMode"
+    
     var body: some View {
         NavigationView {
             VStack {
@@ -29,6 +35,10 @@ struct SettingsView: View {
                 })
                 .onChange(of: useSystemBackgroundColor) { val in
                     viewModel.updateUseSystemBackgroundSetting(val: val)
+                    
+                    let defaults = UserDefaults.standard
+                    defaults.set(val, forKey: SettingsView.useSystemBackgroundKey)
+                    
                 }
                 .padding([.leading, .trailing])
                 
@@ -38,6 +48,9 @@ struct SettingsView: View {
                 }
                 .onChange(of: colorSelection) { val in
                     viewModel.updateBackgroundColorSetting(val: val)
+                    
+                    let defaults = UserDefaults.standard
+                    defaults.set(val == .dark, forKey: SettingsView.useDarkMode)
                 }
                 .pickerStyle(.segmented)
                 .disabled(useSystemBackgroundColor)

@@ -47,12 +47,19 @@ struct WorkoutTracker_v2App: App {
                         updateDatabase()
                         requestNotifications()
                     }
-                    
+
                     defaults.set(currentVersion, forKey: WorkoutTracker_v2App.versionKey)
                     defaults.set(currentBuildNum, forKey: WorkoutTracker_v2App.buildKey)
+                    
+                    let useSystemBackgroundSetting  = defaults.bool(forKey: SettingsView.useSystemBackgroundKey)
+                    let useDarkMode = defaults.bool(forKey: SettingsView.useDarkMode)
+                    
+                    DispatchQueue.main.async {
+                        useSystemBackgroundColor = useSystemBackgroundSetting
+                        colorSelection = useDarkMode ? .dark : .light
+                    }
                 }
-                .preferredColorScheme(useSystemBackgroundColor ? nil :
-                                                                 colorSelection == .dark ? .dark : .light)
+                .preferredColorScheme(useSystemBackgroundColor ? nil : colorSelection)
         }
     }
     
