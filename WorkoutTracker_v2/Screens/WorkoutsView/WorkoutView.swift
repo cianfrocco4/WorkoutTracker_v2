@@ -178,7 +178,7 @@ struct TimerView : View {
         }
         .onAppear() {
             if !timerRunning {
-                timeRemaining = Int(startTimeRemaining)
+                timeRemaining = 0
             }
         }
     }

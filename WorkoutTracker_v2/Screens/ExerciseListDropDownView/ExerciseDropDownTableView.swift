@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Combine
 
 struct ExerciseDropDownTableView: View {
     
@@ -26,10 +27,12 @@ struct ExerciseDropDownTableView: View {
     @Binding var restTimeRemaining : UInt
     
     let formatter: NumberFormatter = {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        return formatter
-    }()
+         let formatter = NumberFormatter()
+         formatter.numberStyle = .decimal
+         formatter.maximumIntegerDigits = 3
+         formatter.maximumFractionDigits = 1
+         return formatter
+     }()
     
     var body: some View {
         VStack {
@@ -66,12 +69,22 @@ struct ExerciseDropDownTableView: View {
                             .fontWeight(.semibold)
                         Divider()
                         ForEach(entries.indices, id: \.self) { index in
-                            TextField("Wgt", value: $entries[index].wgtLbs, format: .number)
+                            TextField("Wgt",
+                                      value: Binding(
+                                        // Default to 0 if the value is nil
+                                        get: { entries[index].wgtLbs ?? 0},
+                                        // Only set the value if the formatter does not return nil
+                                        set: { entries[index].wgtLbs = $0 == nil ? entries[index].wgtLbs : $0 }),
+                                      formatter: formatter)
+                                .onChange(of: entries[index].wgtLbs) { val in
+                                    guard let newWgt = val else { return }
+                                    entries[index].wgtLbs = Float(formatter.string(from: newWgt as NSNumber) ?? "")
+                                }
                                 .multilineTextAlignment(.center)
-                                .frame(maxWidth: 40)
+                                .frame(maxWidth: 50)
                                 .padding(3)
                                 .background(RoundedRectangle(cornerRadius: 10).fill( Color(UIColor.tertiarySystemBackground)))
-                                .keyboardType(.numberPad)
+                                .keyboardType(.decimalPad)
                         }
                         .frame(height: 34)
                     }

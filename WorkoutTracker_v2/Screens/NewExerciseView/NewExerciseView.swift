@@ -47,26 +47,27 @@ struct NewExerciseView: View {
                     .font(.title3)
             }
             
-            HStack {                
+            HStack {
                 VStack {
                     HStack {
                         Text("Exercise Name:")
                         Spacer()
                     }
-                    .padding([.leading, .top])
+                    .padding([.leading, .top], 3)
                     
-                    SearchBar(text: $exerciseSearchTerm, placeholder: "Search Exercises")
-                    Picker(selection: $exerciseName,
-                           label: Text("Exercise Name")) {
-                        ForEach(filteredExercises, id: \.self) { exer in
-                            Text(exer).tag(exer)
+                    VStack {
+                        SearchBar(text: $exerciseSearchTerm, placeholder: "Search Exercises")
+                        Picker(selection: $exerciseName,
+                               label: Text("Exercise Name")) {
+                            ForEach(filteredExercises, id: \.self) { exer in
+                                Text(exer).tag(exer)
+                            }
                         }
+                       .pickerStyle(.wheel)
+                       .frame(maxHeight: 100)
                     }
-                           .pickerStyle(.wheel)
-                           .frame(maxHeight: 100)
+                    .background(RoundedRectangle(cornerRadius: 20).fill(Color(uiColor: UIColor.secondarySystemBackground)))
                 }
-                .background(RoundedRectangle(cornerRadius: 20).fill(Color(uiColor: UIColor.secondarySystemBackground)))
-                Spacer()
             }
             .padding(.bottom)
             
