@@ -76,10 +76,6 @@ struct ExerciseDropDownTableView: View {
                                         // Only set the value if the formatter does not return nil
                                         set: { entries[index].wgtLbs = $0 == nil ? entries[index].wgtLbs : $0 }),
                                       formatter: formatter)
-                                .onChange(of: entries[index].wgtLbs) { val in
-                                    guard let newWgt = val else { return }
-                                    entries[index].wgtLbs = Float(formatter.string(from: newWgt as NSNumber) ?? "")
-                                }
                                 .multilineTextAlignment(.center)
                                 .frame(maxWidth: 50)
                                 .padding(3)
