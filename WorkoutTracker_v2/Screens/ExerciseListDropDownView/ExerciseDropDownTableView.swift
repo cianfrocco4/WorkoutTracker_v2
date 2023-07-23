@@ -10,7 +10,6 @@ import Combine
 
 struct ExerciseDropDownTableView: View {
     
-    @State var workout  : Workout?
     @State var exercise : Exercise
     @State var restTime : UInt
         
@@ -25,6 +24,7 @@ struct ExerciseDropDownTableView: View {
     @Binding var notes : String
     @Binding var restTimeRunning : Bool
     @Binding var restTimeRemaining : UInt
+    var isRestTimerOn : Bool
     
     let formatter: NumberFormatter = {
          let formatter = NumberFormatter()
@@ -109,45 +109,47 @@ struct ExerciseDropDownTableView: View {
                         ForEach(entries.indices, id: \.self) { index in
                             Button {
                                 if entries[index].saved {
-                                    viewModel.unsave(workout: selectedWkout,//workout: workout,
+                                    viewModel.unsave(workout: selectedWkout,
                                                      exercise: exercise,
                                                      set: entries[index].set)
                                 }
                                 else {
-                                    viewModel.save(workout: selectedWkout, //workout,
+                                    viewModel.save(workout: selectedWkout,
                                                    exercise: exercise,
                                                    set: entries[index].set,
                                                    entries: entries,
                                                    notes: notes)
                                     
-                                    restTimeRunning = true  // start the rest time timer
-                                    restTimeRemaining = selectedWkout.restTimeSec
-                                    let _ = dbMgr.insertCurrentRestTimerStartTime(restTimeOffset: selectedWkout.restTimeSec)
-                                    
-                                    let center = UNUserNotificationCenter.current()
-
-                                    let addRequest = {
-                                        let content = UNMutableNotificationContent()
-                                        content.title = "Rest time is complete!"
-                                        content.subtitle = ""
-                                        content.sound = UNNotificationSound.default
-
-                                        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: TimeInterval(selectedWkout.restTimeSec), repeats: false)
-
-                                        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
-                                                                                
-                                        center.add(request)
-                                    }
-                                    
-                                    center.getNotificationSettings { settings in
-                                        if settings.authorizationStatus == .authorized {
-                                            addRequest()
-                                        } else {
-                                            center.requestAuthorization(options: [.alert, .badge, .sound]) { success, error in
-                                                if success {
-                                                    addRequest()
-                                                } else {
-                                                    print("D'oh")
+                                    if isRestTimerOn {
+                                        restTimeRunning = true  // start the rest time timer
+                                        restTimeRemaining = selectedWkout.restTimeSec
+                                        let _ = dbMgr.insertCurrentRestTimerStartTime(restTimeOffset: selectedWkout.restTimeSec)
+                                        
+                                        let center = UNUserNotificationCenter.current()
+                                        
+                                        let addRequest = {
+                                            let content = UNMutableNotificationContent()
+                                            content.title = "Rest time is complete!"
+                                            content.subtitle = ""
+                                            content.sound = UNNotificationSound.default
+                                            
+                                            let trigger = UNTimeIntervalNotificationTrigger(timeInterval: TimeInterval(selectedWkout.restTimeSec), repeats: false)
+                                            
+                                            let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
+                                            
+                                            center.add(request)
+                                        }
+                                        
+                                        center.getNotificationSettings { settings in
+                                            if settings.authorizationStatus == .authorized {
+                                                addRequest()
+                                            } else {
+                                                center.requestAuthorization(options: [.alert, .badge, .sound]) { success, error in
+                                                    if success {
+                                                        addRequest()
+                                                    } else {
+                                                        print("Rest timer notficiations request denied")
+                                                    }
                                                 }
                                             }
                                         }
@@ -174,7 +176,7 @@ struct ExerciseDropDownTableView: View {
                 .padding(.bottom, 10)
                 
                 Button {
-                    viewModel.saveAll(workout: selectedWkout, //workout,
+                    viewModel.saveAll(workout: selectedWkout,
                                       exercise: exercise,
                                       entries: entries,
                                       exerciseNotes: notes)
@@ -221,15 +223,15 @@ struct ExerciseDropDownTableView: View {
 struct ExerciseDropDownTableView_Previews: PreviewProvider {
     static let dbMgr = DbManager(db_path: "WorkoutTracker.sqlite")
     static var previews: some View {
-        ExerciseDropDownTableView(workout: MockData.sampleWorkout1,
-                                  exercise: MockData.sampleExercises[0],
+        ExerciseDropDownTableView(exercise: MockData.sampleExercises[0],
                                   restTime: 60,
                                   repsArr: .constant(MockData.sampleRepsWeightArr),
                                   weightArr: .constant(MockData.sampleRepsWeightArr),
                                   entries: .constant(MockData.sampleEntries),
                                   notes: .constant(""),
                                   restTimeRunning: .constant(false),
-                                  restTimeRemaining: .constant(60))
+                                  restTimeRemaining: .constant(60),
+                                  isRestTimerOn: false)
             .environmentObject(dbMgr)
             .environmentObject(MockData.sampleWorkout1)
     }

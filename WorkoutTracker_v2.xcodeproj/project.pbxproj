@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		920ADCA929F5DE6500EA42A0 /* EditWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920ADCA829F5DE6500EA42A0 /* EditWorkoutView.swift */; };
 		920ADCAB29F5E4F400EA42A0 /* EditWorkoutViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920ADCAA29F5E4F400EA42A0 /* EditWorkoutViewModel.swift */; };
+		92393E232A533AB900303D53 /* WorkoutControlsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92393E222A533AB900303D53 /* WorkoutControlsView.swift */; };
+		92393E252A53404600303D53 /* WorkoutControlsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92393E242A53404600303D53 /* WorkoutControlsViewModel.swift */; };
 		9249FB8A298DFCFF008B8A10 /* TextBindingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9249FB89298DFCFF008B8A10 /* TextBindingManager.swift */; };
 		9249FB8C298EE8BF008B8A10 /* ExerciseListDropDownView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9249FB8B298EE8BF008B8A10 /* ExerciseListDropDownView.swift */; };
 		9249FB90298EFD31008B8A10 /* ExercisesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9249FB8F298EFD31008B8A10 /* ExercisesViewModel.swift */; };
@@ -35,6 +37,8 @@
 		92991A3629D9C39800579542 /* ExerciseHistoryData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92991A3529D9C39800579542 /* ExerciseHistoryData.swift */; };
 		92991A3829D9C3F900579542 /* ExerciseEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92991A3729D9C3F900579542 /* ExerciseEntry.swift */; };
 		92991A3A29DBA47800579542 /* WorkoutViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92991A3929DBA47700579542 /* WorkoutViewModel.swift */; };
+		92A2909D2A2D091500EBB89F /* DecrementingTimerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A2909C2A2D091500EBB89F /* DecrementingTimerView.swift */; };
+		92A2909F2A2D09E100EBB89F /* IncrementingTimerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92A2909E2A2D09E100EBB89F /* IncrementingTimerView.swift */; };
 		92B73F352978D50D004DDCE4 /* WorkoutTracker_v2App.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B73F342978D50D004DDCE4 /* WorkoutTracker_v2App.swift */; };
 		92B73F372978D50D004DDCE4 /* WorkoutTrackerTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92B73F362978D50D004DDCE4 /* WorkoutTrackerTabView.swift */; };
 		92B73F392978D510004DDCE4 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 92B73F382978D510004DDCE4 /* Assets.xcassets */; };
@@ -55,6 +59,8 @@
 /* Begin PBXFileReference section */
 		920ADCA829F5DE6500EA42A0 /* EditWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditWorkoutView.swift; sourceTree = "<group>"; };
 		920ADCAA29F5E4F400EA42A0 /* EditWorkoutViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditWorkoutViewModel.swift; sourceTree = "<group>"; };
+		92393E222A533AB900303D53 /* WorkoutControlsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutControlsView.swift; sourceTree = "<group>"; };
+		92393E242A53404600303D53 /* WorkoutControlsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutControlsViewModel.swift; sourceTree = "<group>"; };
 		9249FB89298DFCFF008B8A10 /* TextBindingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextBindingManager.swift; sourceTree = "<group>"; };
 		9249FB8B298EE8BF008B8A10 /* ExerciseListDropDownView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseListDropDownView.swift; sourceTree = "<group>"; };
 		9249FB8F298EFD31008B8A10 /* ExercisesViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExercisesViewModel.swift; sourceTree = "<group>"; };
@@ -81,6 +87,8 @@
 		92991A3529D9C39800579542 /* ExerciseHistoryData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseHistoryData.swift; sourceTree = "<group>"; };
 		92991A3729D9C3F900579542 /* ExerciseEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExerciseEntry.swift; sourceTree = "<group>"; };
 		92991A3929DBA47700579542 /* WorkoutViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutViewModel.swift; sourceTree = "<group>"; };
+		92A2909C2A2D091500EBB89F /* DecrementingTimerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DecrementingTimerView.swift; sourceTree = "<group>"; };
+		92A2909E2A2D09E100EBB89F /* IncrementingTimerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IncrementingTimerView.swift; sourceTree = "<group>"; };
 		92B73F312978D50D004DDCE4 /* WorkoutTracker_v2.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WorkoutTracker_v2.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		92B73F342978D50D004DDCE4 /* WorkoutTracker_v2App.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutTracker_v2App.swift; sourceTree = "<group>"; };
 		92B73F362978D50D004DDCE4 /* WorkoutTrackerTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutTrackerTabView.swift; sourceTree = "<group>"; };
@@ -205,6 +213,8 @@
 			children = (
 				92CEF2EC2999772400ED5DBA /* Buttons */,
 				92D9552E2A0595C3004C9D1D /* SearchBar.swift */,
+				92A2909C2A2D091500EBB89F /* DecrementingTimerView.swift */,
+				92A2909E2A2D09E100EBB89F /* IncrementingTimerView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -235,6 +245,8 @@
 				924F7B822983726D0041E641 /* WorkoutsViewModel.swift */,
 				920ADCA829F5DE6500EA42A0 /* EditWorkoutView.swift */,
 				920ADCAA29F5E4F400EA42A0 /* EditWorkoutViewModel.swift */,
+				92393E222A533AB900303D53 /* WorkoutControlsView.swift */,
+				92393E242A53404600303D53 /* WorkoutControlsViewModel.swift */,
 			);
 			path = WorkoutsView;
 			sourceTree = "<group>";
@@ -394,7 +406,9 @@
 				92CEBD5329A3081A0059B8FA /* View+Ext.swift in Sources */,
 				92991A3829D9C3F900579542 /* ExerciseEntry.swift in Sources */,
 				92991A2229CF485D00579542 /* WorkoutHistoryViewModel.swift in Sources */,
+				92393E252A53404600303D53 /* WorkoutControlsViewModel.swift in Sources */,
 				9293F39329997B0A00D1EC29 /* ExerciseListViewModel.swift in Sources */,
+				92393E232A533AB900303D53 /* WorkoutControlsView.swift in Sources */,
 				9249FB92298EFF17008B8A10 /* ExerciseDropDownViewModel.swift in Sources */,
 				92CEBD5129A2B8140059B8FA /* ExerciseDropDownTableView.swift in Sources */,
 				92991A3029D9C33900579542 /* Exercise.swift in Sources */,
@@ -415,6 +429,7 @@
 				920ADCA929F5DE6500EA42A0 /* EditWorkoutView.swift in Sources */,
 				92991A2429CF624700579542 /* SettingsView.swift in Sources */,
 				924F7B832983726D0041E641 /* WorkoutsViewModel.swift in Sources */,
+				92A2909F2A2D09E100EBB89F /* IncrementingTimerView.swift in Sources */,
 				920ADCAB29F5E4F400EA42A0 /* EditWorkoutViewModel.swift in Sources */,
 				9249FB90298EFD31008B8A10 /* ExercisesViewModel.swift in Sources */,
 				92B73F352978D50D004DDCE4 /* WorkoutTracker_v2App.swift in Sources */,
@@ -430,6 +445,7 @@
 				92D9552F2A0595C3004C9D1D /* SearchBar.swift in Sources */,
 				92991A2029CF30AD00579542 /* WorkoutHistoryView.swift in Sources */,
 				92991A2929D64F9200579542 /* WorkoutHistoryDetailsView.swift in Sources */,
+				92A2909D2A2D091500EBB89F /* DecrementingTimerView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -557,7 +573,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_ASSET_PATHS = "\"WorkoutTracker_v2/Preview Content\"";
 				DEVELOPMENT_TEAM = N7HAUF9TT9;
 				ENABLE_PREVIEWS = YES;
@@ -587,7 +603,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 6;
 				DEVELOPMENT_ASSET_PATHS = "\"WorkoutTracker_v2/Preview Content\"";
 				DEVELOPMENT_TEAM = N7HAUF9TT9;
 				ENABLE_PREVIEWS = YES;

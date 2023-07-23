@@ -20,6 +20,8 @@ struct ExercisesView: View {
     @Binding var restTimeRunning : Bool
     @Binding var isShowingAddNewExer : Bool
     @Binding var isShowingSwapExer : Bool
+    var isRestTimerOn : Bool
+    var isWorkoutTimerRunning: Bool
         
     var body: some View {
         ZStack {
@@ -108,11 +110,17 @@ struct ExercisesView: View {
                                                           entries: $viewModel.exerciseEntries,
                                                           notes: $viewModel.notes,
                                                           restTimeRunning: $restTimeRunning,
-                                                          restTimeRemaining: $restTimeRemaining)
+                                                          restTimeRemaining: $restTimeRemaining,
+                                                          isRestTimerOn: isRestTimerOn)
                             }
                         }
                     }
                     .onMove(perform: move)
+                    .blur(radius: isShowingAddNewExer ||
+                                  isShowingSwapExer ? 20 : 0)
+                    .disabled(!isWorkoutTimerRunning ||
+                              isShowingAddNewExer ||
+                              isShowingSwapExer)
                     
                     HStack {
                         Spacer()
@@ -132,10 +140,6 @@ struct ExercisesView: View {
                     }
                 }
             }
-            .blur(radius: isShowingAddNewExer ||
-                          isShowingSwapExer ? 20 : 0)
-            .disabled(isShowingAddNewExer ||
-                      isShowingSwapExer)
             
             if (isShowingAddNewExer ||
                 isShowingSwapExer) {
@@ -164,7 +168,9 @@ struct ExercisesView_Previews: PreviewProvider {
                       restTimeRemaining: .constant(60),
                       restTimeRunning: .constant(false),
                       isShowingAddNewExer: .constant(false),
-                      isShowingSwapExer: .constant(false))
+                      isShowingSwapExer: .constant(false),
+                      isRestTimerOn: false,
+                      isWorkoutTimerRunning: true)
             .environmentObject(dbMgr)
             .environmentObject(MockData.sampleWorkout1)
     }

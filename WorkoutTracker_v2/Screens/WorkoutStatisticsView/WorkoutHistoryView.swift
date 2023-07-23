@@ -91,8 +91,10 @@ struct DateNameCheckView: View {
 
     var body: some View {
         Button {
-            isShowingWorkoutHistoryDetails = true
-            selectedWkoutHistory = workout
+            if workout != nil {
+                isShowingWorkoutHistoryDetails = true
+                selectedWkoutHistory = workout
+            }
         } label: {
             VStack {
                 Text(DateNameCheckView.getDateStr(date: date,

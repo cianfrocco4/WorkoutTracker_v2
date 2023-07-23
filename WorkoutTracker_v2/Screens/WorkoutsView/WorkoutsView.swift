@@ -20,22 +20,31 @@ struct WorkoutsView: View {
                         .padding(.top)
                     List {
                         ForEach(viewModel.workouts) { workout in
-                            Button {
-                                print("Selected workout: \(workout.name)")
-                                viewModel.selectedWorkout = workout
-                                viewModel.isWorkoutSelected = true
-                            } label: {
-                                HStack {
-                                    Text(workout.name)
-                                    Spacer()
-                                    VStack {
-                                        Text("Last Performed:")
-                                        Text(viewModel.getLastTimePerformed(workoutName: workout.name))
+                            NavigationLink(
+                                destination:
+                                    WorkoutView(isWorkoutSelected: $viewModel.isWorkoutSelected)
+                                    .environmentObject(workout)
+                                    .onDisappear(perform: {
+                                        viewModel.refreshWorkouts()
+                                    })
+                                    .navigationTitle(workout.name),
+                                label: {
+                                    HStack {
+                                        if workout.active {
+                                            Circle()
+                                                .fill(.green)
+                                                .frame(width: 10, height: 10)
+                                        }
+                                        Text(workout.name)
+                                        Spacer()
+                                        VStack {
+                                            Text("Last Performed:")
+                                            Text(viewModel.getLastTimePerformed(workoutName: workout.name))
+                                        }
+                                        .font(.footnote)
+                                        .opacity(0.6)
                                     }
-                                    .font(.footnote)
-                                    .opacity(0.6)
-                                }
-                            }
+                                })
                             .swipeActions {
                                 Button("Edit") {
                                     print("Edit Workout: " + workout.name)
@@ -43,7 +52,7 @@ struct WorkoutsView: View {
                                 }
                                 .tint(.yellow)
                                 
-                                Button("Remove") {                                    
+                                Button("Remove") {
                                     print("Remove Workout: " + workout.name)
                                     viewModel.removeWorkout(workoutName: workout.name)
                                 }
@@ -69,21 +78,12 @@ struct WorkoutsView: View {
                 }
                 .navigationTitle("Workouts 💪")
             }
-            .blur(radius: (viewModel.isWorkoutSelected ||
-                           viewModel.isShowingAddNewWorkout ||
+            .blur(radius: (viewModel.isShowingAddNewWorkout ||
                            viewModel.isShowingEditWorkout) ? 20 : 0)
-            .disabled(viewModel.isWorkoutSelected ||
-                      viewModel.isShowingAddNewWorkout ||
+            .disabled(viewModel.isShowingAddNewWorkout ||
                       viewModel.isShowingEditWorkout)
-            
-            if viewModel.isWorkoutSelected {
-                WorkoutView(isWorkoutSelected: $viewModel.isWorkoutSelected)
-                .environmentObject(viewModel.selectedWorkout!)
-                .onDisappear(perform: {
-                    viewModel.refreshWorkouts()
-                })
-            }
-            else if viewModel.isShowingAddNewWorkout {
+
+            if viewModel.isShowingAddNewWorkout {
                 NewWorkoutView(isShowingNewWorkout: $viewModel.isShowingAddNewWorkout)
                 .onDisappear(perform: {
                     viewModel.refreshWorkouts()

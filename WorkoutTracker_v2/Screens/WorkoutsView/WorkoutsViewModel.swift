@@ -56,6 +56,14 @@ final class WorkoutsViewModel: ObservableObject {
 
         self.workouts = mgr.getWorkouts()
         self.workoutHistory = getWorkoutHistory(days: 30)
+        
+        let selectedWkoutOpt = mgr.getSelectedWorkout(forDate: Date())
+        if(selectedWkoutOpt != nil) {
+            for (idx, wkout) in workouts.enumerated()
+            {
+                workouts[idx].active = wkout.name == selectedWkoutOpt!.0
+            }
+        }
     }
     
     func removeWorkout(workoutName : String) {

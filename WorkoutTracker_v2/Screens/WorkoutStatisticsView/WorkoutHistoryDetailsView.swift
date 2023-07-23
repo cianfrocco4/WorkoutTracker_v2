@@ -12,12 +12,15 @@ struct WorkoutHistoryDetailsView: View {
     
     @Binding var isShowingWorkoutHistoryDetails : Bool
     
+    @EnvironmentObject var dbMgr : DbManager
+    
     var body: some View {
         VStack {
             Text("\(wkoutHistory.name)")
                 .font(.title3)
             Button {
                 print("Deleting workout history")
+//                dbMgr.deleteWorkoutHistory(wkoutHistory.name)
             } label: {
                 Text("Delete")
                     .multilineTextAlignment(.center)

@@ -618,8 +618,8 @@ class DbManager : ObservableObject {
         var df = DateFormatter()
         df.locale = Locale(identifier: "en_US_POSIX") // set locale to reliable US_POSIX
         df.dateFormat = "yyyy-MM-dd"
-        let date = df.date(from: dateStr)!
-        return date
+        let date = df.date(from: dateStr)
+        return date == nil ? Date() : date!
     }
     
     func isSameDay(date1: Date, date2: Date) -> Bool {
@@ -783,9 +783,6 @@ class DbManager : ObservableObject {
                     return false
                 }
                 else {
-                    
-                    print("Update db!")
-                    
                     sqlite3_finalize(stmt)
                 }
             }
@@ -852,6 +849,29 @@ class DbManager : ObservableObject {
         }
     }
 
+    func AddRestTimerEnabled() {
+        if executeQuery(queryStr: "ALTER TABLE RestTimer ADD COLUMN restTimerEnabled BOOL DEFAULT false NOT NULL;") {
+            print ("Successfully added rest timer enabled field to RestTimer!")
+        }
+        else {
+            print ("Failed to add rest timer enabled field!")
+        }
+    }
+    
+    func AddSelectedWorkoutTable() {
+        if executeQuery(queryStr: """
+                                  CREATE TABLE IF NOT EXISTS SelectedWorkout ( workoutName STRING NOT NULL,
+                                                                               startDateTime STRING NOT NULL,
+                                                                               isTimerOn BOOL DEFAULT false NOT NULL,
+                                                                               PRIMARY KEY (workoutName, startDateTime),
+                                                                               FOREIGN KEY (workoutName) REFERENCES Workout (name) )
+                                  """ ) {
+            print ("Successfully added selected workout table!")
+        }
+        else {
+            print ("Failed to add selected workout table!")
+        }
+    }
     
     func updateDb() {
         if isDbOpen {
@@ -859,7 +879,13 @@ class DbManager : ObservableObject {
             
             UpdateWeightCol()
             
-            AddRestTimerTable()            
+            AddRestTimerTable()
+            
+            // v1.0.4
+            AddRestTimerEnabled()
+            
+            // v1.0.6
+            AddSelectedWorkoutTable()
         }
     }
     
@@ -991,5 +1017,147 @@ class DbManager : ObservableObject {
         }
         
         return nil
+    }
+    
+    func setRestTimerEnabled(isOn : Bool) {
+        if isDbOpen {
+            var queryStr = "SELECT * FROM RestTimer"
+            var stmt: OpaquePointer?
+
+            if sqlite3_prepare_v2(db, queryStr, -1, &stmt, nil) != SQLITE_OK{
+                let errmsg = String(cString: sqlite3_errmsg(db)!)
+                print("error preparing: \(errmsg)")
+                return
+            }
+            
+            // Check if the rest timer has been added to the db yet, add it if it hasn't
+            if(sqlite3_step(stmt) != SQLITE_ROW) {
+                queryStr = "INSERT INTO RestTimer (restTimerStart, restTimerEnabled) VALUES (datetime('now', 'localtime', " + " '+ " + String(60) + " seconds'), " + String(isOn) + ")"
+            }
+            else {
+                queryStr = "UPDATE RestTimer SET restTimerEnabled = " + String(isOn)
+            }
+            
+            if sqlite3_prepare_v2(db, queryStr, -1, &stmt, nil) != SQLITE_OK{
+                let errmsg = String(cString: sqlite3_errmsg(db)!)
+                print("error preparing: \(errmsg)")
+                return
+            }
+            
+            if(sqlite3_step(stmt) != SQLITE_DONE) {
+                print("Error running query: " + queryStr)
+                return
+            }
+            
+            sqlite3_finalize(stmt)
+        }
+    }
+    
+    func getRestTimerEnabled() -> Bool? {
+        if isDbOpen {
+            var queryStr = "SELECT count(*) from RestTimer"
+            var stmt: OpaquePointer?
+            
+            if sqlite3_prepare_v2(db, queryStr, -1, &stmt, nil) != SQLITE_OK{
+                let errmsg = String(cString: sqlite3_errmsg(db)!)
+                print("error preparing: \(errmsg)")
+                return nil
+            }
+            
+            if(sqlite3_step(stmt) == SQLITE_ROW) {
+                let count = Int(sqlite3_column_int(stmt, 0))
+                
+                if count != 1 {
+                    print("Rest timer does not have 1 entry")
+                    return nil
+                }
+            }
+            
+            queryStr = "SELECT restTimerEnabled from RestTimer"
+
+            if sqlite3_prepare_v2(db, queryStr, -1, &stmt, nil) != SQLITE_OK{
+                let errmsg = String(cString: sqlite3_errmsg(db)!)
+                print("error preparing: \(errmsg)")
+                return nil
+            }
+            
+            if(sqlite3_step(stmt) == SQLITE_ROW) {
+                let tmp = Int(sqlite3_column_int(stmt, 0))
+                let enabled = tmp == 0
+                sqlite3_finalize(stmt)
+                
+                return enabled
+            }
+            
+            sqlite3_finalize(stmt)
+        }
+        
+        return nil
+    }
+    
+    func getSelectedWorkout(forDate: Date) -> (String, Date, Bool)? {
+        if isDbOpen {
+            let queryStr = "SELECT * from SelectedWorkout WHERE startDateTime BETWEEN datetime('now', 'localtime', 'start of day') AND datetime('now', 'localtime')"
+            var stmt: OpaquePointer?
+            
+            if sqlite3_prepare_v2(db, queryStr, -1, &stmt, nil) != SQLITE_OK{
+                let errmsg = String(cString: sqlite3_errmsg(db)!)
+                print("error preparing: \(errmsg)")
+                return nil
+            }
+            
+            if(sqlite3_step(stmt) == SQLITE_ROW) {
+                
+                let workoutName = String(cString: sqlite3_column_text(stmt, 0))
+                let startDateTime = getSwiftDateFromSqliteDate(dateStr: String(cString: sqlite3_column_text(stmt, 1)))
+                let isTimerOn = sqlite3_column_int(stmt, 2) != 0
+
+                sqlite3_finalize(stmt)
+                
+                return (workoutName, startDateTime, isTimerOn)
+            }
+            
+            sqlite3_finalize(stmt)
+        }
+        
+        return nil
+    }
+    
+    func setSelectedWorkout(workoutName: String,
+                            isTimerOn : Bool) {
+        if isDbOpen {
+            // Clear all entries in selected workout table
+            var queryStr = "DELETE FROM SelectedWorkout"
+            if(!executeQuery(queryStr: queryStr)) {
+                print("Failed to execute query: \(queryStr)")
+            }
+            
+            // Set the selected workout
+            queryStr = "INSERT INTO SelectedWorkout (workoutName, startDateTime, isTimerOn) VALUES ('\(workoutName)', datetime('now', 'localtime'), \(isTimerOn ? "true" : "false"))"
+            if(!executeQuery(queryStr: queryStr)) {
+                print("Failed to execute query: \(queryStr)")
+            }
+        }
+    }
+    
+    func setSelectedWorkoutTimer(workoutName: String,
+                                 isTimerOn : Bool) {
+        if isDbOpen {
+            let queryStr = "UPDATE SelectedWorkout SET isTimerOn = \(isTimerOn ? "true" : "false") WHERE workoutName = \(workoutName) AND startDateTime BETWEEN datetime('now', 'localtime', 'start of day') AND datetime('now', 'localtime')"
+            var stmt: OpaquePointer?
+            
+            if sqlite3_prepare_v2(db, queryStr, -1, &stmt, nil) != SQLITE_OK{
+                let errmsg = String(cString: sqlite3_errmsg(db)!)
+                print("error preparing: \(errmsg)")
+                return
+            }
+            
+            if sqlite3_step(stmt) != SQLITE_DONE {
+                print("ERROR could not execute: " + queryStr)
+                return
+            }
+            
+            sqlite3_finalize(stmt)
+        }
     }
 }
