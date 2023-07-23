@@ -13,12 +13,12 @@ struct WorkoutTrackerTabView: View {
     // default to workouts tab
     @State private var selectedTab = "Workouts"
     
+    @Binding var useSystemBackgroundColor : Bool
+    @Binding var colorSelection : ColorScheme
+
     var body: some View {
         TabView (selection: $selectedTab){
             WorkoutStatisticsView()
-//                .onTapGesture {
-//                    selectedTab = "Statistics"
-//                }
                 .tabItem {
                     Image(systemName: "chart.line.uptrend.xyaxis")
                     Text("Statistics")
@@ -26,9 +26,6 @@ struct WorkoutTrackerTabView: View {
                 .tag("Statistics")
                 .environmentObject(dbMgr)
             WorkoutsView()
-//                .onTapGesture {
-//                    selectedTab = "Workouts"
-//                }
                 .tabItem {
                     Image(systemName: "house.fill")
                     Text("Workouts")
@@ -37,9 +34,6 @@ struct WorkoutTrackerTabView: View {
                 .environmentObject(dbMgr)
             
             ExercisesListView(selectedExercise: .constant(""))
-//                .onTapGesture {
-//                    selectedTab = "Exercises"
-//                }
                 .tabItem {
                     Image(systemName: "dumbbell.fill")
                     Text("Exercises")
@@ -47,10 +41,8 @@ struct WorkoutTrackerTabView: View {
                 .tag("Exercises")
                 .environmentObject(dbMgr)
             
-            SettingsView()
-//                .onTapGesture {
-//                    selectedTab = "Settings"
-//                }
+            SettingsView(useSystemBackgroundColor: $useSystemBackgroundColor,
+                         colorSelection: $colorSelection)
                 .tabItem {
                     Image(systemName: "gearshape.fill")
                     Text("Settings")
@@ -63,6 +55,7 @@ struct WorkoutTrackerTabView: View {
 
 struct HomeView_Previews: PreviewProvider {
     static var previews: some View {
-        WorkoutTrackerTabView()
+        WorkoutTrackerTabView(useSystemBackgroundColor: .constant(true),
+                              colorSelection: .constant(.dark))
     }
 }

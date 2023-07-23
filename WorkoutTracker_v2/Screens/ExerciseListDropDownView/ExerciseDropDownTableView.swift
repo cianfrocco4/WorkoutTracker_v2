@@ -6,10 +6,10 @@
 //
 
 import SwiftUI
+import Combine
 
 struct ExerciseDropDownTableView: View {
     
-    @State var workout  : Workout?
     @State var exercise : Exercise
     @State var restTime : UInt
         
@@ -24,12 +24,15 @@ struct ExerciseDropDownTableView: View {
     @Binding var notes : String
     @Binding var restTimeRunning : Bool
     @Binding var restTimeRemaining : UInt
+    var isRestTimerOn : Bool
     
     let formatter: NumberFormatter = {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        return formatter
-    }()
+         let formatter = NumberFormatter()
+         formatter.numberStyle = .decimal
+         formatter.maximumIntegerDigits = 3
+         formatter.maximumFractionDigits = 1
+         return formatter
+     }()
     
     var body: some View {
         VStack {
@@ -66,12 +69,18 @@ struct ExerciseDropDownTableView: View {
                             .fontWeight(.semibold)
                         Divider()
                         ForEach(entries.indices, id: \.self) { index in
-                            TextField("Wgt", value: $entries[index].wgtLbs, format: .number)
+                            TextField("Wgt",
+                                      value: Binding(
+                                        // Default to 0 if the value is nil
+                                        get: { entries[index].wgtLbs ?? 0},
+                                        // Only set the value if the formatter does not return nil
+                                        set: { entries[index].wgtLbs = $0 == nil ? entries[index].wgtLbs : $0 }),
+                                      formatter: formatter)
                                 .multilineTextAlignment(.center)
-                                .frame(maxWidth: 40)
+                                .frame(maxWidth: 50)
                                 .padding(3)
                                 .background(RoundedRectangle(cornerRadius: 10).fill( Color(UIColor.tertiarySystemBackground)))
-                                .keyboardType(.numberPad)
+                                .keyboardType(.decimalPad)
                         }
                         .frame(height: 34)
                     }
@@ -100,20 +109,51 @@ struct ExerciseDropDownTableView: View {
                         ForEach(entries.indices, id: \.self) { index in
                             Button {
                                 if entries[index].saved {
-                                    viewModel.unsave(workout: selectedWkout,//workout: workout,
+                                    viewModel.unsave(workout: selectedWkout,
                                                      exercise: exercise,
                                                      set: entries[index].set)
                                 }
                                 else {
-                                    viewModel.save(workout: selectedWkout, //workout,
+                                    viewModel.save(workout: selectedWkout,
                                                    exercise: exercise,
                                                    set: entries[index].set,
                                                    entries: entries,
                                                    notes: notes)
                                     
-                                    restTimeRunning = true  // start the rest time timer
-                                    restTimeRemaining = selectedWkout.restTimeSec
-                                    let _ = dbMgr.insertCurrentRestTimerStartTime(restTimeOffset: selectedWkout.restTimeSec)
+                                    if isRestTimerOn {
+                                        restTimeRunning = true  // start the rest time timer
+                                        restTimeRemaining = selectedWkout.restTimeSec
+                                        let _ = dbMgr.insertCurrentRestTimerStartTime(restTimeOffset: selectedWkout.restTimeSec)
+                                        
+                                        let center = UNUserNotificationCenter.current()
+                                        
+                                        let addRequest = {
+                                            let content = UNMutableNotificationContent()
+                                            content.title = "Rest time is complete!"
+                                            content.subtitle = ""
+                                            content.sound = UNNotificationSound.default
+                                            
+                                            let trigger = UNTimeIntervalNotificationTrigger(timeInterval: TimeInterval(selectedWkout.restTimeSec), repeats: false)
+                                            
+                                            let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
+                                            
+                                            center.add(request)
+                                        }
+                                        
+                                        center.getNotificationSettings { settings in
+                                            if settings.authorizationStatus == .authorized {
+                                                addRequest()
+                                            } else {
+                                                center.requestAuthorization(options: [.alert, .badge, .sound]) { success, error in
+                                                    if success {
+                                                        addRequest()
+                                                    } else {
+                                                        print("Rest timer notficiations request denied")
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                                 
                                 entries[index].saved = !(entries[index].saved)
@@ -136,7 +176,7 @@ struct ExerciseDropDownTableView: View {
                 .padding(.bottom, 10)
                 
                 Button {
-                    viewModel.saveAll(workout: selectedWkout, //workout,
+                    viewModel.saveAll(workout: selectedWkout,
                                       exercise: exercise,
                                       entries: entries,
                                       exerciseNotes: notes)
@@ -183,15 +223,15 @@ struct ExerciseDropDownTableView: View {
 struct ExerciseDropDownTableView_Previews: PreviewProvider {
     static let dbMgr = DbManager(db_path: "WorkoutTracker.sqlite")
     static var previews: some View {
-        ExerciseDropDownTableView(workout: MockData.sampleWorkout1,
-                                  exercise: MockData.sampleExercises[0],
+        ExerciseDropDownTableView(exercise: MockData.sampleExercises[0],
                                   restTime: 60,
                                   repsArr: .constant(MockData.sampleRepsWeightArr),
                                   weightArr: .constant(MockData.sampleRepsWeightArr),
                                   entries: .constant(MockData.sampleEntries),
                                   notes: .constant(""),
                                   restTimeRunning: .constant(false),
-                                  restTimeRemaining: .constant(60))
+                                  restTimeRemaining: .constant(60),
+                                  isRestTimerOn: false)
             .environmentObject(dbMgr)
             .environmentObject(MockData.sampleWorkout1)
     }

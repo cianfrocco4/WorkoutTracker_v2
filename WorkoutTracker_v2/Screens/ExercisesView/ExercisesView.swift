@@ -18,6 +18,10 @@ struct ExercisesView: View {
     @State var restTime : UInt
     @Binding var restTimeRemaining : UInt
     @Binding var restTimeRunning : Bool
+    @Binding var isShowingAddNewExer : Bool
+    @Binding var isShowingSwapExer : Bool
+    var isRestTimerOn : Bool
+    var isWorkoutTimerRunning: Bool
         
     var body: some View {
         ZStack {
@@ -75,7 +79,7 @@ struct ExercisesView: View {
                                     let idx = exercises.firstIndex(where: { $0.name == exercise.name })
                                     
                                     if (idx != nil) {
-                                        viewModel.isShowingSwapExer = true
+                                        isShowingSwapExer = true
                                         viewModel.swapIdx = idx!
                                     }
                                 }
@@ -98,10 +102,7 @@ struct ExercisesView: View {
                             
                             if viewModel.isExerciseSelected &&
                                 viewModel.selectedExercise!.id == exercise.id {
-                                //                    ExerciseListDropDownView(workout: workout,
-                                //                                             exercise: viewModel.selectedExercise!,
-                                //                                             repsArr: $viewModel.repsArr,
-                                //                                             weightArr: $viewModel.weightArr)
+                                
                                 ExerciseDropDownTableView(exercise: viewModel.selectedExercise!,
                                                           restTime: restTime,
                                                           repsArr: $viewModel.repsArr,
@@ -109,18 +110,22 @@ struct ExercisesView: View {
                                                           entries: $viewModel.exerciseEntries,
                                                           notes: $viewModel.notes,
                                                           restTimeRunning: $restTimeRunning,
-                                                          restTimeRemaining: $restTimeRemaining)
-                                .frame(width: 325,
-                                       height: 330)
+                                                          restTimeRemaining: $restTimeRemaining,
+                                                          isRestTimerOn: isRestTimerOn)
                             }
                         }
                     }
                     .onMove(perform: move)
+                    .blur(radius: isShowingAddNewExer ||
+                                  isShowingSwapExer ? 20 : 0)
+                    .disabled(!isWorkoutTimerRunning ||
+                              isShowingAddNewExer ||
+                              isShowingSwapExer)
                     
                     HStack {
                         Spacer()
                         Button {
-                            viewModel.addNewExerciseClicked()
+                            isShowingAddNewExer = !isShowingAddNewExer
                         } label: {
                             Text("Add new exercise")
                                 .multilineTextAlignment(.center)
@@ -135,15 +140,11 @@ struct ExercisesView: View {
                     }
                 }
             }
-            .blur(radius: viewModel.isShwoingAddNewExer ||
-                          viewModel.isShowingSwapExer ? 20 : 0)
-            .disabled(viewModel.isShwoingAddNewExer ||
-                      viewModel.isShowingSwapExer)
             
-            if (viewModel.isShwoingAddNewExer ||
-                viewModel.isShowingSwapExer) {
-                NewExerciseView(isShwoingAddNewExer: $viewModel.isShwoingAddNewExer,
-                                isShowingSwapExer: $viewModel.isShowingSwapExer,
+            if (isShowingAddNewExer ||
+                isShowingSwapExer) {
+                NewExerciseView(isShwoingAddNewExer: $isShowingAddNewExer,
+                                isShowingSwapExer: $isShowingSwapExer,
                                 exercises: $exercises,
                                 swapIdx: $viewModel.swapIdx)
                 .environmentObject(selectedWkout)
@@ -165,7 +166,11 @@ struct ExercisesView_Previews: PreviewProvider {
         ExercisesView(exercises: MockData.sampleExercises,
                       restTime: 60,
                       restTimeRemaining: .constant(60),
-                      restTimeRunning: .constant(false))
+                      restTimeRunning: .constant(false),
+                      isShowingAddNewExer: .constant(false),
+                      isShowingSwapExer: .constant(false),
+                      isRestTimerOn: false,
+                      isWorkoutTimerRunning: true)
             .environmentObject(dbMgr)
             .environmentObject(MockData.sampleWorkout1)
     }

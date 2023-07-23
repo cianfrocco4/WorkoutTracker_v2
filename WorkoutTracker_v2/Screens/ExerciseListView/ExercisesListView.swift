@@ -22,6 +22,7 @@ struct ExercisesListView: View {
         ZStack {
             NavigationView {
                 VStack {
+                    SearchBar(text: $filterStr, placeholder: "Search Exercises")
                     TextField("Search", text: $filterStr)
                         .padding([.top, .leading, .trailing], 30)
                     List (selection: $selectedExercise){

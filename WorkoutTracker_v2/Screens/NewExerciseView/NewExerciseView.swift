@@ -15,6 +15,7 @@ struct NewExerciseView: View {
 
     @State private var selectedType: ExerciseType = .temporary
     @State private var exerciseName = ""
+    @State private var exerciseSearchTerm = ""
         
     @State var numberOfSets : Int?
     @State var minNumberOfReps : Int?
@@ -28,21 +29,47 @@ struct NewExerciseView: View {
     
     @EnvironmentObject var dbMgr : DbManager
     @EnvironmentObject private var selectedWkout : Workout
+    
+    var filteredExercises: [String] {
+        allExerciseNames.filter {
+            exerciseSearchTerm.isEmpty ? true :
+                                         $0.lowercased().contains(exerciseSearchTerm.lowercased())
+        }
+    }
 
     var body: some View {
         VStack {
             
-            HStack {
-                Text("Exercise Name:")
-                Picker(selection: $exerciseName,
-                       label: Text("Exercise Name")) {
-                    ForEach(allExerciseNames, id: \.self) { exer in
-                        Text(exer)
-                    }
-                }
-                       .pickerStyle(.menu)
-                Spacer()
+            if isShowingSwapExer &&
+                swapIdx != nil &&
+                exercises.indices.contains(swapIdx!) {
+                Text("Swapping: \(exercises[swapIdx!].name)")
+                    .font(.title3)
             }
+            
+            HStack {
+                VStack {
+                    HStack {
+                        Text("Exercise Name:")
+                        Spacer()
+                    }
+                    .padding([.leading, .top], 3)
+                    
+                    VStack {
+                        SearchBar(text: $exerciseSearchTerm, placeholder: "Search Exercises")
+                        Picker(selection: $exerciseName,
+                               label: Text("Exercise Name")) {
+                            ForEach(filteredExercises, id: \.self) { exer in
+                                Text(exer).tag(exer)
+                            }
+                        }
+                       .pickerStyle(.wheel)
+                       .frame(maxHeight: 100)
+                    }
+                    .background(RoundedRectangle(cornerRadius: 20).fill(Color(uiColor: UIColor.secondarySystemBackground)))
+                }
+            }
+            .padding(.bottom)
             
             HStack {
                 Text("Number of Sets:")

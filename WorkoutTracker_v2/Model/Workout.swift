@@ -9,16 +9,18 @@ import Foundation
 
 
 final class Workout: Decodable, Identifiable, Equatable, ObservableObject {
-    var id        : Int
-    var name      : String
-    var exercises : [Exercise]
-    var restTimeSec  : UInt
+    var id          : Int
+    var name        : String
+    var exercises   : [Exercise]
+    var restTimeSec : UInt
+    var active      : Bool
     
     init(id: Int, name: String, exercises: [Exercise], restTimeSec: UInt){
         self.id = id
         self.name = name
         self.exercises = exercises
         self.restTimeSec = restTimeSec
+        self.active = false
     }
     
     static func == (lhs: Workout, rhs: Workout) -> Bool {
