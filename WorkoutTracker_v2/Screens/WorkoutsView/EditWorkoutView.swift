@@ -8,35 +8,62 @@
 import SwiftUI
 
 struct EditWorkoutView: View {
-    @Binding var workout : Workout
-    @Binding var isShowingEditWorkout : Bool
     
-    @State var workouts : [Workout]
+    @Environment(\.presentationMode) private var presentationMode
+    @EnvironmentObject private var workoutModel : WorkoutModel
+    
+    @Binding var workout : Workout
     
     @StateObject private var viewModel = EditWorkoutViewModel()
-    
-    @EnvironmentObject var dbMgr : DbManager
-    
+        
     var body: some View {
         VStack {
             HStack {
                 Text("Workout Name: ")
                 TextField("WorkoutName", text: $workout.name)
                     .textFieldStyle(.roundedBorder)
-                    .onChange(of: workout.name) {
-                        // Only save the workout if it is a unique name
-                        print("Workout name changed to: " + String($0))
-//                            workout.name = $0
-                        viewModel.saveWorkout(workout: workout)
-                    }
             }
-            .padding(.leading)
+            .padding()
+            
+            List (workout.exercises) { exercise in
+                Text(exercise.name)
+            }
+            .frame(maxHeight: 200)
+            
+            if workout.name != "" {
+                NavigationLink(
+                    destination:
+                        NewExerciseView(exercises: $workout.exercises,
+                                        swapIdx: .constant(nil),
+                                        saveToDb: false),
+                    label: {
+                        Text("Add new exercise")
+                    })
+                .padding(.bottom)
+            }
             
             HStack {
                 Button {
-                    isShowingEditWorkout = false
+                    if(workout.name != "") {
+                        workoutModel.removeWorkout(workoutName: workout.name)
+                        workoutModel.addNewWorkout(workout: workout)
+                    }
                 } label: {
-                    Text("Ok")
+                    Text("Save")
+                        .multilineTextAlignment(.center)
+                        .font(.body)
+                        .fontWeight(.semibold)
+                        .frame(width: 130, height: 30)
+                        .foregroundColor(.primary)
+                        .cornerRadius(10)
+                }
+                .background(Color(UIColor.tertiarySystemBackground))
+                
+                Button {
+                    // FUTURE: should add pop up to confirm before canceling
+                    self.presentationMode.wrappedValue.dismiss()
+                } label: {
+                    Text("Cancel")
                         .multilineTextAlignment(.center)
                         .font(.body)
                         .fontWeight(.semibold)
@@ -50,18 +77,13 @@ struct EditWorkoutView: View {
         }
         .background(RoundedRectangle(cornerRadius: 25, style: .continuous).fill(Color(uiColor: UIColor.systemBackground)))
         .onAppear() {
-            self.viewModel.setup(self.dbMgr, workoutName: workout.name)
+            self.viewModel.setup(workoutName: workout.name)
         }
     }
 }
 
 struct EditWorkoutView_Previews: PreviewProvider {
-    static let dbMgr = DbManager(db_path: "WorkoutTracker.sqlite")
-
     static var previews: some View {
-        EditWorkoutView(workout: .constant(MockData.sampleWorkout1),
-                        isShowingEditWorkout: .constant(true),
-                        workouts: [MockData.sampleWorkout1])
-        .environmentObject(dbMgr)
+        EditWorkoutView(workout: .constant(MockData.sampleWorkout1))
     }
 }

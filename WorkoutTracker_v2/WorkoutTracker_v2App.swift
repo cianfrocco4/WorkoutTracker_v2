@@ -15,7 +15,7 @@ struct WorkoutTracker_v2App: App {
     static let versionKey = "LastAppVersion"
     // Key for last build in NSUserDefaults
     static let buildKey   = "LastBuildVersion"
-    
+        
     @State private var useSystemBackgroundColor : Bool = true
     @State private var colorSelection : ColorScheme = .dark
     
@@ -66,8 +66,7 @@ struct WorkoutTracker_v2App: App {
     func updateDatabase() {
         print("Updating database...")
         
-        let dbMgr = DbManager(db_path: "WorkoutTracker.sqlite")
-        dbMgr.updateDb()
+        DbManager.shared.updateDb()
     }
     
     func requestNotifications() {

@@ -7,28 +7,17 @@
 
 import Foundation
 final class NewWorkoutViewModel: ObservableObject {
-    var dbMgr : DbManager?
-    
     @Published var newWorkoutName = ""
     @Published var newWorkout = Workout(id: 0, name: "", exercises: [], restTimeSec: 60)
     @Published var exercises : [Exercise] = []
-    @Published var isShowingNewExer = false
-    
-    func setup(_ dbMgr : DbManager) {
-        self.dbMgr = dbMgr
-    }
     
     func addNewWorkout() {
-        guard let mgr = dbMgr else { return }
-            
-        mgr.addNewWorkout(name : newWorkout.name)
+        DbManager.shared.addNewWorkout(newWorkout : newWorkout)
     }
     
     func loadDeletedWorkout() {
-        guard let mgr = dbMgr else { return }
-
-        if mgr.getAllHistoricalWorkoutNames().contains(newWorkout.name) {
-            exercises = mgr.getExercisesForHistoricalWorkout(workoutName: newWorkout.name)
+        if DbManager.shared.getAllHistoricalWorkoutNames().contains(newWorkout.name) {
+            exercises = DbManager.shared.getExercisesForHistoricalWorkout(workoutName: newWorkout.name)
         }
     }
 }

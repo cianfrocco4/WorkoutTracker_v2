@@ -13,9 +13,7 @@ struct ExerciseListDropDownView: View {
     @State var exercise : Exercise
     
     @StateObject private var viewModel = ExerciseDropDownViewModel()
-    
-    @EnvironmentObject var dbMgr : DbManager
-    
+        
     @Binding var repsArr : [TextBindingManager]
     @Binding var weightArr : [TextBindingManager]
     
@@ -71,19 +69,14 @@ struct ExerciseListDropDownView: View {
                 RoundedRectangle(cornerRadius: 16)
                     .stroke(Color.gray.opacity(0.1), lineWidth: 4)
             )
-        .onAppear {
-          self.viewModel.setup(self.dbMgr)
-        }
     }
 }
 
 struct ExerciseListView_Previews: PreviewProvider {
-    static let dbMgr = DbManager(db_path: "WorkoutTracker.sqlite")
     static var previews: some View {
         ExerciseListDropDownView(workout: MockData.sampleWorkout1,
                                  exercise: MockData.sampleExercises[0],
                                  repsArr: .constant(MockData.sampleRepsWeightArr),
                                  weightArr: .constant(MockData.sampleRepsWeightArr))
-            .environmentObject(dbMgr)
     }
 }

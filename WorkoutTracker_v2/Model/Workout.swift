@@ -26,6 +26,26 @@ final class Workout: Decodable, Identifiable, Equatable, ObservableObject {
     static func == (lhs: Workout, rhs: Workout) -> Bool {
         return lhs.name == rhs.name
     }
+    
+    /**
+     * Update this workout with the latest data in the database.
+     *
+     * @return None.
+     * @throw None.
+     */
+    func refreshFromDb() -> Void {
+        guard let updatedWkout = DbManager.shared.getWorkoutFromDb(oldWorkout: self) else {
+            print("Workout not in the database: \(self.name)")
+            return
+        }
+        
+        self.id = updatedWkout.id
+        self.name = updatedWkout.name
+        self.exercises = updatedWkout.exercises
+        self.restTimeSec = updatedWkout.restTimeSec
+        self.active = updatedWkout.active
+        
+    }
 }
 
 struct MockData {

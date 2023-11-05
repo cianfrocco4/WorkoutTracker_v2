@@ -10,27 +10,15 @@ final class WorkoutViewModel: ObservableObject {
     
     @Published var workoutTime : Double = 0
     
-    var dbMgr : DbManager?
-    
-    func setup(_ dbMgr : DbManager) {
-        self.dbMgr = dbMgr
-    }
-    
     func saveWorkout(workout : Workout) {
-        guard let mgr = dbMgr else { return }
-        
-        mgr.saveWorkout(workoutName: workout.name, notes: "", restTimeSec: workout.restTimeSec)
+        DbManager.shared.saveWorkout(workoutName: workout.name, notes: "", restTimeSec: workout.restTimeSec)
     }
     
     func setRestTimerOn(isOn : Bool) {
-        guard let mgr = dbMgr else { return }
-
-        mgr.setRestTimerEnabled(isOn: isOn)
+        DbManager.shared.setRestTimerEnabled(isOn: isOn)
     }
     
     func getSelectedWorkout() -> (String, Date, Bool)? {
-        guard let mgr = dbMgr else { return nil }
-
-        return mgr.getSelectedWorkout(forDate: Date())
+        return DbManager.shared.getSelectedWorkout(forDate: Date())
     }
 }

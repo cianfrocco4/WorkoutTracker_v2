@@ -15,8 +15,6 @@ func formatMmSsMl(counter: Double) -> String {
 }
 
 struct IncrementingTimerView: View {
-    @EnvironmentObject private var dbMgr : DbManager
-
     var isTimerRunning : Bool
     @Binding var timeMs : Double
     
@@ -48,12 +46,9 @@ struct IncrementingTimerView: View {
 }
 
 struct IncrementingTimerView_Previews: PreviewProvider {
-    static let dbMgr = DbManager(db_path: "WorkoutTracker.sqlite")
-
     static var previews: some View {
         IncrementingTimerView(isTimerRunning: true,
                               timeMs: .constant(0),
                               startTime: Date())
-            .environmentObject(dbMgr)
     }
 }

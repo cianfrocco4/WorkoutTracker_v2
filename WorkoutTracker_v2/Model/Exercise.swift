@@ -7,13 +7,22 @@
 
 import Foundation
 
-struct Exercise: Decodable, Identifiable {
+final class Exercise: Decodable, Identifiable, ObservableObject {
     var id      : Int
     var name    : String
     var sets    : Int
     var minReps : Int
     var maxReps : Int
     var weight  : Float
+    
+    init(id: Int, name: String, sets: Int, minReps: Int, maxReps: Int, weight: Float) {
+        self.id = id
+        self.name = name
+        self.sets = sets
+        self.minReps = minReps
+        self.maxReps = maxReps
+        self.weight = weight
+    }
 }
 
 extension MockData {

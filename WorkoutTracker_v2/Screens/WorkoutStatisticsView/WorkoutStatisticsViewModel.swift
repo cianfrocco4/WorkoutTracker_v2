@@ -7,26 +7,19 @@
 
 import Foundation
 final class WorkoutsStatisticsViewModel: ObservableObject {
-    var dbMgr : DbManager?
-    
     @Published var exerciseHistories : [ExerciseHistoryData] = []
     @Published var selectedExerciseName : String = ""
     @Published var allExerciseNames : [String] = []
     
-    func setup(_ dbMgr : DbManager) {
-        self.dbMgr = dbMgr
+    func setup() {
         getAllExerciseNames()
     }
     
     func refreshHistories() {
-        guard let mgr = dbMgr else { return }
-        
-        exerciseHistories = mgr.getHistoricalExerciseData(exerciseName: selectedExerciseName)
+        exerciseHistories = DbManager.shared.getHistoricalExerciseData(exerciseName: selectedExerciseName)
     }
     
     func getAllExerciseNames() {
-        guard let mgr = dbMgr else { return }
-        
-        allExerciseNames = mgr.getExercises()
+        allExerciseNames = DbManager.shared.getExercises()
     }
 }

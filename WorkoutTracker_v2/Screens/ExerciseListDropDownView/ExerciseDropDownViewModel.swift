@@ -8,22 +8,17 @@
 import Foundation
 
 final class ExerciseDropDownViewModel: ObservableObject {
-    var dbMgr : DbManager?
-    
-    func setup(_ dbMgr : DbManager) {
-        self.dbMgr = dbMgr
-    }
     
     func save(workout: Workout,
               exercise: Exercise,
               repsArr: [TextBindingManager],
               weightArr: [TextBindingManager]) {
-        dbMgr!.saveWorkout(workoutName: workout.name,
+        DbManager.shared.saveWorkout(workoutName: workout.name,
                            notes: "",
                            restTimeSec: workout.restTimeSec)
 
         for set in 0..<exercise.sets {
-            dbMgr!.saveExercise(workoutName: workout.name,
+            DbManager.shared.saveExercise(workoutName: workout.name,
                                exerciseName: exercise.name,
                                set: set,
                                reps: Int(repsArr[set].text) ?? 0,
@@ -37,17 +32,16 @@ final class ExerciseDropDownViewModel: ObservableObject {
               set : Int,
               entries : [ExerciseEntry],
               notes: String) {
-        guard let mgr = dbMgr else { return }
         guard let wkout = workout else { return }
                 
         if entries.indices.contains(set-1) {
             guard let wgt = entries[set-1].wgtLbs else { return }
 
-            mgr.saveWorkout(workoutName: wkout.name,
+            DbManager.shared.saveWorkout(workoutName: wkout.name,
                             notes: "",
                             restTimeSec: wkout.restTimeSec)
             
-            mgr.saveExercise(workoutName: wkout.name,
+            DbManager.shared.saveExercise(workoutName: wkout.name,
                              exerciseName: exercise.name,
                              set: set,
                              reps: entries[set-1].reps,
@@ -62,10 +56,9 @@ final class ExerciseDropDownViewModel: ObservableObject {
     func unsave(workout: Workout?,
                 exercise: Exercise,
                 set : Int) {
-        guard let mgr = dbMgr else { return }
         guard let wkout = workout else { return }
         
-        mgr.unsaveExercise(workoutName: wkout.name,
+        DbManager.shared.unsaveExercise(workoutName: wkout.name,
                            exerciseName: exercise.name,
                            set: set)
         
@@ -75,17 +68,16 @@ final class ExerciseDropDownViewModel: ObservableObject {
                  exercise : Exercise,
                  entries : [ExerciseEntry],
                  exerciseNotes: String) {
-        guard let mgr = dbMgr else { return }
         guard let wkout = workout else { return }
         
-        mgr.saveWorkout(workoutName: wkout.name,
+        DbManager.shared.saveWorkout(workoutName: wkout.name,
                         notes: "",
                         restTimeSec: wkout.restTimeSec)
 
         for set in 0..<entries.count {
             guard let wgt = entries[set].wgtLbs else { continue }
             
-            mgr.saveExercise(workoutName: wkout.name,
+            DbManager.shared.saveExercise(workoutName: wkout.name,
                              exerciseName: exercise.name,
                              set: entries[set].set,
                              reps: entries[set].reps,
@@ -96,9 +88,8 @@ final class ExerciseDropDownViewModel: ObservableObject {
     
     func getPrev(exerciseName : String,
                  set : Int) -> Float? {
-        guard let mgr = dbMgr else { return nil }
-        
-        return mgr.getPrevWeight(exerciseName: exerciseName,
-                                 set: set)
+        return DbManager.shared.getPrevWeight(
+            exerciseName: exerciseName,
+            set: set)
     }
 }

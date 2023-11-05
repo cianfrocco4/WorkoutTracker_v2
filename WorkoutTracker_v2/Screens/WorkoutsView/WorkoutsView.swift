@@ -8,25 +8,23 @@
 import SwiftUI
 
 struct WorkoutsView: View {
-    @EnvironmentObject var dbMgr : DbManager
+    
+    @EnvironmentObject private var workoutModel : WorkoutModel
     
     @StateObject private var viewModel = WorkoutsViewModel()
-    
+        
     var body: some View {
         ZStack {
             NavigationView {
                 VStack {
-                    WorkoutHistoryView(workouts: $viewModel.workoutHistory)
+                    WorkoutHistoryView(workouts: $workoutModel.historicalWorkouts)
                         .padding(.top)
                     List {
-                        ForEach(viewModel.workouts) { workout in
+                        ForEach($workoutModel.workouts) { $workout in
                             NavigationLink(
                                 destination:
-                                    WorkoutView(isWorkoutSelected: $viewModel.isWorkoutSelected)
+                                    WorkoutView()
                                     .environmentObject(workout)
-                                    .onDisappear(perform: {
-                                        viewModel.refreshWorkouts()
-                                    })
                                     .navigationTitle(workout.name),
                                 label: {
                                     HStack {
@@ -46,15 +44,16 @@ struct WorkoutsView: View {
                                     }
                                 })
                             .swipeActions {
-                                Button("Edit") {
-                                    print("Edit Workout: " + workout.name)
-                                    viewModel.setEditWorkout(workoutName: workout.name)
-                                }
+                                NavigationLink(
+                                    destination: EditWorkoutView(workout: $workout),
+                                    label: {
+                                        Text("Edit workout")
+                                    })
                                 .tint(.yellow)
                                 
                                 Button("Remove") {
                                     print("Remove Workout: " + workout.name)
-                                    viewModel.removeWorkout(workoutName: workout.name)
+                                    workoutModel.removeWorkout(workoutName: workout.name)
                                 }
                                 .tint(.red)
                             }
@@ -63,52 +62,26 @@ struct WorkoutsView: View {
                         .padding([.top, .bottom], 5)
                     }
                     
-                    Button {
-                        viewModel.addNewWorkoutClicked()
-                    } label: {
-                        Text("Add new workout")
-                            .multilineTextAlignment(.center)
-                            .font(.body)
-                            .fontWeight(.semibold)
-                            .cornerRadius(10)
-                    }
+                    NavigationLink(
+                        destination: NewWorkoutView(),
+                        label: {
+                            Text("Add new workout")
+                        })
                     .padding()
                     .buttonStyle(.borderedProminent)
                     .tint(Color.brandPrimary)
                 }
                 .navigationTitle("Workouts 💪")
             }
-            .blur(radius: (viewModel.isShowingAddNewWorkout ||
-                           viewModel.isShowingEditWorkout) ? 20 : 0)
-            .disabled(viewModel.isShowingAddNewWorkout ||
-                      viewModel.isShowingEditWorkout)
-
-            if viewModel.isShowingAddNewWorkout {
-                NewWorkoutView(isShowingNewWorkout: $viewModel.isShowingAddNewWorkout)
-                .onDisappear(perform: {
-                    viewModel.refreshWorkouts()
-                })
-            }
-            else if viewModel.isShowingEditWorkout &&
-                    viewModel.editWorkoutIdx != nil {
-                EditWorkoutView(workout: $viewModel.workouts[viewModel.editWorkoutIdx!],
-                                isShowingEditWorkout: $viewModel.isShowingEditWorkout,
-                                workouts: viewModel.workouts)
-                .onDisappear() {
-                    viewModel.refreshWorkouts()
-                }
-            }
         }
-        .onAppear {
-          self.viewModel.setup(self.dbMgr)
+        .onAppear() {
+            viewModel.setup()
         }
     }
 }
 
 struct WorkoutsView_Previews: PreviewProvider {
-    static let dbMgr = DbManager(db_path: "WorkoutTracker.sqlite")
     static var previews: some View {
         WorkoutsView()
-            .environmentObject(dbMgr)
     }
 }

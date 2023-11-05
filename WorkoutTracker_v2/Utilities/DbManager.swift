@@ -8,7 +8,9 @@
 import Foundation
 import SQLite3
 
-class DbManager : ObservableObject {
+class DbManager {
+    static let shared = DbManager(db_path: "WorkoutTracker.sqlite")
+    
     var db : OpaquePointer? = nil
     var dbPath : String?
     var isDbOpen = false
@@ -507,9 +509,10 @@ class DbManager : ObservableObject {
         }
     }
     
-    func addNewWorkout(name : String) {
+    func addNewWorkout(newWorkout : Workout) {
         if(isDbOpen) {
-            var queryStr = "INSERT INTO Workout (name) VALUES ('" + name + "')"
+            // First add the workout to the Workout table
+            var queryStr = "INSERT INTO Workout (name) VALUES ('\(newWorkout.name)')"
             
             var stmt: OpaquePointer?
 
@@ -525,7 +528,12 @@ class DbManager : ObservableObject {
                 
                 print("Added new workout!")
                 
-                queryStr = "INSERT INTO Workout (name) VALUES ('" + name + "')"
+                // Next, add the exercises for the new workout to the WorkoutDetails table
+                for e in newWorkout.exercises {
+                    queryStr = "INSERT INTO WorkoutDetails (workoutName, exerciseName, numSets, minReps, maxReps, restTimeUSec) VALUES ('\(newWorkout.name)', '\(e.name)', \(e.sets), \(e.minReps), \(e.maxReps), \(newWorkout.restTimeSec))"
+                    
+                    let _ = executeQuery(queryStr: queryStr)
+                }
                 
                 sqlite3_finalize(stmt)
             }
@@ -1159,5 +1167,64 @@ class DbManager : ObservableObject {
             
             sqlite3_finalize(stmt)
         }
+    }
+    
+    /**
+     * Get the workout details for the requested workout name.
+     *
+     * @param oldWorkout the old workout details.
+     * @return an optional workout containing the workout details if it exists, or nil otherwise.
+     * @throw None.
+     */
+    func getWorkoutFromDb(oldWorkout : Workout) -> Workout? {
+        var newWorkout : Workout? = nil
+        if isDbOpen {
+            var queryString = "SELECT * from WorkoutDetails WHERE workoutName = '\(oldWorkout.name)'"
+            var stmt: OpaquePointer?
+            
+            //preparing the query
+            if sqlite3_prepare_v2(db, queryString, -1, &stmt, nil) != SQLITE_OK{
+                let errmsg = String(cString: sqlite3_errmsg(db)!)
+                print("error preparing insert: \(errmsg)")
+                return newWorkout
+            }
+     
+            //traversing through all the records to add the exercises
+            var exerciseId = 0
+            while(sqlite3_step(stmt) == SQLITE_ROW) {
+                let workoutName = String(cString: sqlite3_column_text(stmt, 0))
+                let exerciseName = String(cString: sqlite3_column_text(stmt, 1))
+                let numSets = sqlite3_column_int(stmt, 2)
+                let minReps = sqlite3_column_int(stmt, 3)
+                let maxReps = sqlite3_column_int(stmt, 4)
+                let restTimeSec = UInt(sqlite3_column_int(stmt, 5)) / (1000000)  // convert USec to Sec
+     
+                //adding exercises
+                let exercise =
+                    Exercise(
+                        id: exerciseId,
+                        name: exerciseName,
+                        sets: Int(numSets),
+                        minReps: Int(minReps),
+                        maxReps: Int(maxReps),
+                        weight: 0.0)
+                
+                if(newWorkout == nil)
+                {
+                    newWorkout = 
+                        Workout(
+                            id: oldWorkout.id,
+                            name: oldWorkout.name, 
+                            exercises: [],
+                            restTimeSec: oldWorkout.restTimeSec)
+                }
+                
+                newWorkout!.exercises.append(exercise)
+                exerciseId += 1
+            }
+
+        }
+        
+        return newWorkout
     }
 }

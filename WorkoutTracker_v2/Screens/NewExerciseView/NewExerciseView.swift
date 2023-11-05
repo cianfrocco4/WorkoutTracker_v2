@@ -12,6 +12,14 @@ struct NewExerciseView: View {
         case permanent, temporary
         var id: Self { self }
     }
+    
+    enum Field: Hashable {
+        case eeNumSets
+        case eeMinNumReps
+        case eeMaxNumReps
+    }
+    
+    @Environment(\.presentationMode) var presentation
 
     @State private var selectedType: ExerciseType = .temporary
     @State private var exerciseName = ""
@@ -21,14 +29,14 @@ struct NewExerciseView: View {
     @State var minNumberOfReps : Int?
     @State var maxNumberOfReps : Int?
     @State var allExerciseNames : [String] = []
+    
+    @FocusState var focusedField : Field?
         
-    @Binding var isShwoingAddNewExer : Bool
-    @Binding var isShowingSwapExer : Bool
     @Binding var exercises : [Exercise]
     @Binding var swapIdx : Int?
     
-    @EnvironmentObject var dbMgr : DbManager
-    @EnvironmentObject private var selectedWkout : Workout
+    var selectedWkout : Workout?
+    var saveToDb : Bool
     
     var filteredExercises: [String] {
         allExerciseNames.filter {
@@ -40,8 +48,7 @@ struct NewExerciseView: View {
     var body: some View {
         VStack {
             
-            if isShowingSwapExer &&
-                swapIdx != nil &&
+            if swapIdx != nil &&
                 exercises.indices.contains(swapIdx!) {
                 Text("Swapping: \(exercises[swapIdx!].name)")
                     .font(.title3)
@@ -64,7 +71,7 @@ struct NewExerciseView: View {
                             }
                         }
                        .pickerStyle(.wheel)
-                       .frame(maxHeight: 100)
+                       .frame(minHeight: 100)
                     }
                     .background(RoundedRectangle(cornerRadius: 20).fill(Color(uiColor: UIColor.secondarySystemBackground)))
                 }
@@ -75,24 +82,29 @@ struct NewExerciseView: View {
                 Text("Number of Sets:")
                 TextField("# of Sets", value: $numberOfSets, format: .number)
                     .keyboardType(.numberPad)
+                    .focused($focusedField, equals: .eeNumSets)
             }
             
             HStack {
                 Text("Number of Reps:")
                 TextField("Rep Min", value: $minNumberOfReps, format: .number)
+                    .focused($focusedField, equals: .eeMinNumReps)
                 TextField("Rep Max", value: $maxNumberOfReps, format: .number)
+                    .focused($focusedField, equals: .eeMaxNumReps)
             }
             .keyboardType(.numberPad)
             
-            HStack {
-                Text("Exercise Type:")
-                Picker (selection: $selectedType, label: Text("Type")) {
-                    Text("Temporary").tag(ExerciseType.temporary)
-                    Text("Permenant").tag(ExerciseType.permanent)
+            if saveToDb {
+                HStack {
+                    Text("Exercise Type:")
+                    Picker (selection: $selectedType, label: Text("Type")) {
+                        Text("Temporary").tag(ExerciseType.temporary)
+                        Text("Permenant").tag(ExerciseType.permanent)
+                    }
+                    .pickerStyle(.segmented)
+                    
+                    Spacer()
                 }
-                .pickerStyle(.segmented)
-                
-                Spacer()
             }
             
             HStack {
@@ -102,9 +114,6 @@ struct NewExerciseView: View {
                         numberOfSets != nil &&
                         minNumberOfReps != nil &&
                         maxNumberOfReps != nil) {
-                        
-                        isShwoingAddNewExer = false
-                        isShowingSwapExer = false
                         
                         let id = exercises.last != nil ? exercises.last!.id + 1 : 0
                         let e = Exercise(id: id,
@@ -130,16 +139,21 @@ struct NewExerciseView: View {
                             exercises.insert(e, at: swapIdx!)
                         }
                         
-                        if selectedType == ExerciseType.permanent {
+                        if selectedWkout != nil &&
+                            selectedType == ExerciseType.permanent &&
+                            saveToDb {
                             // Upate the database
-                            dbMgr.addExerciseToWorkout(workout: selectedWkout, //workout,
+                            DbManager.shared.addExerciseToWorkout(workout: selectedWkout!, //workout,
                                                        exercise: e)
                             
                             if eToRemove != nil {
                                 // remove the swapped from exercise from the workout
-                                dbMgr.removeExerciseFromWorkout(workout: selectedWkout, //workout,
+                                DbManager.shared.removeExerciseFromWorkout(workout: selectedWkout!, //workout,
                                                                 exercise: eToRemove!)
-                            }                        }
+                            }
+                        }
+                        
+                        self.presentation.wrappedValue.dismiss()
                     }
                 } label: {
                     Text("Save")
@@ -153,8 +167,7 @@ struct NewExerciseView: View {
                 .background(Color(UIColor.tertiarySystemBackground))
                 
                 Button {
-                    isShwoingAddNewExer = false
-                    isShowingSwapExer = false
+                    self.presentation.wrappedValue.dismiss()
                 } label: {
                     Text("Cancel")
                         .multilineTextAlignment(.center)
@@ -174,23 +187,30 @@ struct NewExerciseView: View {
         .background(RoundedRectangle(cornerRadius: 25, style: .continuous).fill(Color(uiColor: UIColor.systemBackground)))
         .onAppear() {
             // re-query to get updated list of exercises
-            allExerciseNames = dbMgr.getExercises()
+            allExerciseNames = DbManager.shared.getExercises()
             exerciseName = allExerciseNames.first ?? ""
         }
         .onDisappear() {
             swapIdx = nil // nullify this field on disappear
         }
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+
+                Button("Done") {
+                    focusedField = nil
+                }
+            }
+        }
     }
 }
 
 struct NewExerciseView_Previews: PreviewProvider {
-    static let dbMgr = DbManager(db_path: "WorkoutTracker.sqlite")
     static var previews: some View {
-        NewExerciseView(isShwoingAddNewExer: .constant(true),
-                        isShowingSwapExer: .constant(false),
-                        exercises: .constant(MockData.sampleExercises),
-                        swapIdx: .constant(nil))
-        .environmentObject(dbMgr)
+        NewExerciseView(exercises: .constant(MockData.sampleExercises),
+                        swapIdx: .constant(nil), 
+                        selectedWkout: MockData.sampleWorkout1,
+                        saveToDb: true)
         .environmentObject(MockData.sampleWorkout1)
     }
 }

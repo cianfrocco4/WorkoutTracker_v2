@@ -8,8 +8,6 @@
 import SwiftUI
 
 struct DecrementingTimerView : View {
-    @EnvironmentObject private var dbMgr : DbManager
-
     @Binding var timerRunning : Bool
     @State var startTimeRemaining : UInt
     var isRestTimerOn : Bool
@@ -37,7 +35,7 @@ struct DecrementingTimerView : View {
                     .foregroundColor(.primary)
                     .onReceive(timer) { _ in
                         if isRestTimerOn && timerRunning {
-                            guard let startTime = dbMgr.getLastSavedRestTimerStartTime() else { return }
+                            guard let startTime = DbManager.shared.getLastSavedRestTimerStartTime() else { return }
                             timeRemaining = Int(startTime.timeIntervalSince(Date.now))
                             
                             if timeRemaining <= 0 {
@@ -61,13 +59,9 @@ struct DecrementingTimerView : View {
 
 
 struct DecrementingTimerView_Previews: PreviewProvider {
-    
-    static let dbMgr = DbManager(db_path: "WorkoutTracker.sqlite")
-
     static var previews: some View {
         DecrementingTimerView(timerRunning: .constant(true),
                               startTimeRemaining: 10,
                               isRestTimerOn: true)
-        .environmentObject(dbMgr)
     }
 }

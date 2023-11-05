@@ -9,7 +9,6 @@ import SwiftUI
 import Foundation
 
 final class ExercisesViewModel: ObservableObject {
-    var dbMgr : DbManager?
     private var workout : Workout?
     
     @Published var isExerciseSelected : Bool = false
@@ -20,9 +19,7 @@ final class ExercisesViewModel: ObservableObject {
     @Published var swapIdx : Int?
     @Published var notes : String = ""
     
-    func setup(_ dbMgr : DbManager,
-               workout: Workout?) {
-        self.dbMgr = dbMgr
+    func setup(workout: Workout?) {
         self.workout = workout
         setRepsAndWeight()
     }
@@ -30,10 +27,9 @@ final class ExercisesViewModel: ObservableObject {
     func setRepsAndWeight() {
         notes = ""
         
-        if selectedExercise != nil &&
-           dbMgr != nil {
+        if selectedExercise != nil {
             for set in 0..<selectedExercise!.sets {
-                if let result = self.dbMgr!.getLastTimePerformed(workoutName: nil, exerciseName: selectedExercise!.name, setNum: set + 1) {
+                if let result = DbManager.shared.getLastTimePerformed(workoutName: nil, exerciseName: selectedExercise!.name, setNum: set + 1) {
                     if result.notes != "" {
                         notes = result.notes
                     }
@@ -101,19 +97,15 @@ final class ExercisesViewModel: ObservableObject {
     
     func getPrev(exerciseName : String,
                  set : Int) -> Float? {
-        guard let mgr = dbMgr else { return nil }
-        
-        return mgr.getPrevWeight(exerciseName: exerciseName,
+        return DbManager.shared.getPrevWeight(exerciseName: exerciseName,
                                  set: set)
     }
     
     func getPrevDateToday(exerciseName : String,
                      set : Int) -> Bool {
-        guard let mgr = dbMgr else { return false }
-
         guard let wkout = workout else { return false }
         
-        let date =  mgr.getPrevDate(workoutName: wkout.name,
+        let date =  DbManager.shared.getPrevDate(workoutName: wkout.name,
                                     exerciseName: exerciseName,
                                     set: set)
         
@@ -157,8 +149,7 @@ final class ExercisesViewModel: ObservableObject {
     }
     
     func removeExercise(exercise: Exercise) {
-        guard let mgr = dbMgr else { return }
         guard let w = workout else { return }
-        mgr.removeExerciseFromWorkout(workout: w, exercise: exercise)
+        DbManager.shared.removeExerciseFromWorkout(workout: w, exercise: exercise)
     }
 }

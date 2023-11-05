@@ -8,14 +8,23 @@
 import SwiftUI
 
 struct WorkoutTrackerTabView: View {
-    @StateObject private var dbMgr = DbManager(db_path: "WorkoutTracker.sqlite")
+    @StateObject private var workoutModel =
+        WorkoutModel(
+            workouts: DbManager.shared.getWorkouts(), 
+            historicalWorkouts: DbManager.shared.getLastDaysPerformed(days: 30),
+            selectedWorkoutName: {
+                    guard let (name, _/*date*/, _/*timerOn*/) = DbManager.shared.getSelectedWorkout(forDate: Date()) else {
+                        return nil
+                    }
+                    return name
+                }())
     
     // default to workouts tab
     @State private var selectedTab = "Workouts"
     
     @Binding var useSystemBackgroundColor : Bool
     @Binding var colorSelection : ColorScheme
-
+    
     var body: some View {
         TabView (selection: $selectedTab){
             WorkoutStatisticsView()
@@ -24,14 +33,13 @@ struct WorkoutTrackerTabView: View {
                     Text("Statistics")
                 }
                 .tag("Statistics")
-                .environmentObject(dbMgr)
             WorkoutsView()
                 .tabItem {
                     Image(systemName: "house.fill")
                     Text("Workouts")
                 }
                 .tag("Workouts")
-                .environmentObject(dbMgr)
+                .environmentObject(workoutModel)
             
             ExercisesListView(selectedExercise: .constant(""))
                 .tabItem {
@@ -39,7 +47,6 @@ struct WorkoutTrackerTabView: View {
                     Text("Exercises")
                 }
                 .tag("Exercises")
-                .environmentObject(dbMgr)
             
             SettingsView(useSystemBackgroundColor: $useSystemBackgroundColor,
                          colorSelection: $colorSelection)
@@ -48,7 +55,10 @@ struct WorkoutTrackerTabView: View {
                     Text("Settings")
                 }
                 .tag("Settings")
-                .environmentObject(dbMgr)
+        }
+        .onAppear {
+            workoutModel.setWorkouts(
+                workouts: DbManager.shared.getWorkouts())
         }
     }
 }

@@ -10,7 +10,6 @@ import SwiftUI
 struct ExercisesView: View {
     @State var exercises : [Exercise]
     
-    @EnvironmentObject var dbMgr : DbManager
     @EnvironmentObject private var selectedWkout : Workout
     
     @StateObject private var viewModel = ExercisesViewModel()
@@ -18,8 +17,6 @@ struct ExercisesView: View {
     @State var restTime : UInt
     @Binding var restTimeRemaining : UInt
     @Binding var restTimeRunning : Bool
-    @Binding var isShowingAddNewExer : Bool
-    @Binding var isShowingSwapExer : Bool
     var isRestTimerOn : Bool
     var isWorkoutTimerRunning: Bool
         
@@ -79,8 +76,25 @@ struct ExercisesView: View {
                                     let idx = exercises.firstIndex(where: { $0.name == exercise.name })
                                     
                                     if (idx != nil) {
-                                        isShowingSwapExer = true
                                         viewModel.swapIdx = idx!
+                                        NavigationLink(
+                                            destination:
+                                                NewExerciseView(exercises: $exercises,
+                                                                swapIdx: $viewModel.swapIdx,
+                                                                selectedWkout: selectedWkout, 
+                                                                saveToDb: true)
+                                                .navigationTitle("New Exercise"),
+                                            label: {
+                                                Text("Add new exercise")
+                                                    .multilineTextAlignment(.center)
+                                                    .font(.body)
+                                                    .fontWeight(.semibold)
+                                                    .cornerRadius(10)
+                                            }
+                                        )
+                                        .padding()
+                                        .buttonStyle(.borderedProminent)
+                                        .tint(Color.brandPrimary)
                                     }
                                 }
                                 .tint(.yellow)
@@ -116,42 +130,36 @@ struct ExercisesView: View {
                         }
                     }
                     .onMove(perform: move)
-                    .blur(radius: isShowingAddNewExer ||
-                                  isShowingSwapExer ? 20 : 0)
-                    .disabled(!isWorkoutTimerRunning ||
-                              isShowingAddNewExer ||
-                              isShowingSwapExer)
+                    .disabled(!isWorkoutTimerRunning)
                     
                     HStack {
                         Spacer()
-                        Button {
-                            isShowingAddNewExer = !isShowingAddNewExer
-                        } label: {
-                            Text("Add new exercise")
-                                .multilineTextAlignment(.center)
-                                .font(.body)
-                                .fontWeight(.semibold)
-                                .cornerRadius(10)
-                        }
+                        NavigationLink(
+                            destination:
+                                NewExerciseView(exercises: $exercises,
+                                                swapIdx: $viewModel.swapIdx,
+                                                selectedWkout: selectedWkout, 
+                                                saveToDb: true)
+                                .navigationTitle("New Exercise"),
+                            label: {
+                                Text("Add new exercise")
+                                    .multilineTextAlignment(.center)
+                                    .font(.body)
+                                    .fontWeight(.semibold)
+                                    .cornerRadius(10)
+                            }
+                        )
                         .padding()
                         .buttonStyle(.borderedProminent)
                         .tint(Color.brandPrimary)
+                        
                         Spacer()
                     }
                 }
             }
-            
-            if (isShowingAddNewExer ||
-                isShowingSwapExer) {
-                NewExerciseView(isShwoingAddNewExer: $isShowingAddNewExer,
-                                isShowingSwapExer: $isShowingSwapExer,
-                                exercises: $exercises,
-                                swapIdx: $viewModel.swapIdx)
-                .environmentObject(selectedWkout)
-            }
         }
         .onAppear {
-            self.viewModel.setup(self.dbMgr, workout: selectedWkout) // workout)
+            self.viewModel.setup(workout: selectedWkout) // workout)
         }
     }
     
@@ -161,17 +169,13 @@ struct ExercisesView: View {
 }
 
 struct ExercisesView_Previews: PreviewProvider {
-    static let dbMgr = DbManager(db_path: "WorkoutTracker.sqlite")
     static var previews: some View {
         ExercisesView(exercises: MockData.sampleExercises,
                       restTime: 60,
                       restTimeRemaining: .constant(60),
                       restTimeRunning: .constant(false),
-                      isShowingAddNewExer: .constant(false),
-                      isShowingSwapExer: .constant(false),
                       isRestTimerOn: false,
                       isWorkoutTimerRunning: true)
-            .environmentObject(dbMgr)
             .environmentObject(MockData.sampleWorkout1)
     }
 }

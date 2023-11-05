@@ -8,14 +8,12 @@
 import SwiftUI
 
 struct WorkoutControlsView: View {
-    @EnvironmentObject private var dbMgr : DbManager
     @EnvironmentObject private var selectedWkout : Workout
     
     @StateObject private var viewModel = WorkoutControlsViewModel()
     
     @State private var restTime : UInt = 60
     
-    @Binding var isWorkoutSelected : Bool
     @Binding var restTimerRunning : Bool
     @Binding var workoutTime : Double
     @Binding var workoutTimerRunning : Bool
@@ -28,7 +26,7 @@ struct WorkoutControlsView: View {
                     Button {
                         workoutTimerRunning = !workoutTimerRunning
                         viewModel.workoutStartTime = Date()
-                        dbMgr.setSelectedWorkout(workoutName: workoutTimerRunning ? self.selectedWkout.name : "",
+                        DbManager.shared.setSelectedWorkout(workoutName: workoutTimerRunning ? self.selectedWkout.name : "",
                                                  isTimerOn: workoutTimerRunning)
                     } label: {
                         Text(workoutTimerRunning ? "Stop Workout" : "Start Workout")
@@ -104,9 +102,7 @@ struct WorkoutControlsView: View {
                     .opacity(0.4)
             }
         }
-        .onAppear() {
-            self.viewModel.setup(self.dbMgr)
-            
+        .onAppear() {            
             let selectedWkoutOpt = viewModel.getSelectedWorkout()
             if(selectedWkoutOpt != nil) {
                 viewModel.workoutStartTime = selectedWkoutOpt!.1
@@ -117,16 +113,13 @@ struct WorkoutControlsView: View {
 }
 
 struct WorkoutControlsView_Previews: PreviewProvider {
-    static let dbMgr = DbManager(db_path: "WorkoutTracker.sqlite")
     static let wkout = MockData.sampleWorkout1
 
     static var previews: some View {
-        WorkoutControlsView(isWorkoutSelected: .constant(true),
-                            restTimerRunning: .constant(true),
+        WorkoutControlsView(restTimerRunning: .constant(true),
                             workoutTime: .constant(0),
                             workoutTimerRunning: .constant(true),
                             isRestTimerOn: .constant(true))
-        .environmentObject(dbMgr)
         .environmentObject(wkout)
     }
 }

@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		920ADCA929F5DE6500EA42A0 /* EditWorkoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920ADCA829F5DE6500EA42A0 /* EditWorkoutView.swift */; };
 		920ADCAB29F5E4F400EA42A0 /* EditWorkoutViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 920ADCAA29F5E4F400EA42A0 /* EditWorkoutViewModel.swift */; };
+		9219D1B42AF80F8F00AA5B3B /* WorkoutModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9219D1B32AF80F8F00AA5B3B /* WorkoutModel.swift */; };
 		92393E232A533AB900303D53 /* WorkoutControlsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92393E222A533AB900303D53 /* WorkoutControlsView.swift */; };
 		92393E252A53404600303D53 /* WorkoutControlsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92393E242A53404600303D53 /* WorkoutControlsViewModel.swift */; };
 		9249FB8A298DFCFF008B8A10 /* TextBindingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9249FB89298DFCFF008B8A10 /* TextBindingManager.swift */; };
@@ -59,6 +60,7 @@
 /* Begin PBXFileReference section */
 		920ADCA829F5DE6500EA42A0 /* EditWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditWorkoutView.swift; sourceTree = "<group>"; };
 		920ADCAA29F5E4F400EA42A0 /* EditWorkoutViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditWorkoutViewModel.swift; sourceTree = "<group>"; };
+		9219D1B32AF80F8F00AA5B3B /* WorkoutModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutModel.swift; sourceTree = "<group>"; };
 		92393E222A533AB900303D53 /* WorkoutControlsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutControlsView.swift; sourceTree = "<group>"; };
 		92393E242A53404600303D53 /* WorkoutControlsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutControlsViewModel.swift; sourceTree = "<group>"; };
 		9249FB89298DFCFF008B8A10 /* TextBindingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextBindingManager.swift; sourceTree = "<group>"; };
@@ -145,6 +147,7 @@
 				92991A3529D9C39800579542 /* ExerciseHistoryData.swift */,
 				92991A2D29D9C2F700579542 /* Workout.swift */,
 				92991A3329D9C37400579542 /* WorkoutHistory.swift */,
+				9219D1B32AF80F8F00AA5B3B /* WorkoutModel.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -418,6 +421,7 @@
 				92CEBD5829C7E8BC0059B8FA /* NewWorkoutView.swift in Sources */,
 				9249FB8A298DFCFF008B8A10 /* TextBindingManager.swift in Sources */,
 				926F41FD29EE1E78006143CF /* StopWatch.swift in Sources */,
+				9219D1B42AF80F8F00AA5B3B /* WorkoutModel.swift in Sources */,
 				92991A2B29D7BDF000579542 /* WorkoutStatisticsViewModel.swift in Sources */,
 				92991A3A29DBA47800579542 /* WorkoutViewModel.swift in Sources */,
 				924F7B812983684D0041E641 /* DbManager.swift in Sources */,
@@ -573,7 +577,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_ASSET_PATHS = "\"WorkoutTracker_v2/Preview Content\"";
 				DEVELOPMENT_TEAM = N7HAUF9TT9;
 				ENABLE_PREVIEWS = YES;
@@ -603,7 +607,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_ASSET_PATHS = "\"WorkoutTracker_v2/Preview Content\"";
 				DEVELOPMENT_TEAM = N7HAUF9TT9;
 				ENABLE_PREVIEWS = YES;

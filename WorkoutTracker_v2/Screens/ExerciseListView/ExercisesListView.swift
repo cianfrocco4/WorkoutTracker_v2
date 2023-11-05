@@ -8,8 +8,6 @@
 import SwiftUI
 
 struct ExercisesListView: View {
-    @EnvironmentObject var dbMgr : DbManager
-    
     @StateObject private var viewModel = ExerciseListViewModel()
     
     @State private var filterStr = ""
@@ -80,16 +78,11 @@ struct ExercisesListView: View {
                 .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(Color(uiColor: UIColor.systemBackground)))
             }
         }
-        .onAppear {
-          self.viewModel.setup(self.dbMgr)
-        }
     }
 }
 
 struct ExercisesListView_Previews: PreviewProvider {
-    static let dbMgr = DbManager(db_path: "WorkoutTracker.sqlite")
     static var previews: some View {
         ExercisesListView(selectedExercise: .constant(""))
-            .environmentObject(dbMgr)
     }
 }

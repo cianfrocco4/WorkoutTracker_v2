@@ -9,8 +9,6 @@ import SwiftUI
 import Charts
 
 struct WorkoutStatisticsView: View {
-    @EnvironmentObject var dbMgr : DbManager
-    
     @StateObject private var viewModel = WorkoutsStatisticsViewModel()
         
     func getAvgWeight(exerciseHistory : ExerciseHistoryData) -> Float {
@@ -52,17 +50,12 @@ struct WorkoutStatisticsView: View {
                 Spacer()
             }
             .navigationTitle("Statistics 📈")
-            .onAppear {
-              self.viewModel.setup(self.dbMgr)
-            }
         }
     }
 }
 
 struct WorkoutStatisticsView_Previews: PreviewProvider {
-    static let dbMgr = DbManager(db_path: "WorkoutTracker.sqlite")
     static var previews: some View {
         WorkoutStatisticsView()
-            .environmentObject(dbMgr)
     }
 }

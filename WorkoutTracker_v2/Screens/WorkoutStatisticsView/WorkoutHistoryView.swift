@@ -11,9 +11,7 @@ struct WorkoutHistoryView: View {
     @StateObject private var viewModel = WorkoutHistoryViewModel()
     
     @Binding var workouts : [WorkoutHistory]
-    
-    @EnvironmentObject var dbMgr : DbManager
-        
+            
     var body: some View {
         if viewModel.isShowingWorkoutHistoryDetails {
             Button {
@@ -41,9 +39,6 @@ struct WorkoutHistoryView: View {
                             .id(idx)
                         }
                     }
-                    .onAppear() {
-                        viewModel.setup(dbMgr)
-                    }
                 }
                 .frame(height: 80)
                 .onAppear() {
@@ -55,11 +50,8 @@ struct WorkoutHistoryView: View {
 }
 
 struct WorkoutHistoryView_Previews: PreviewProvider {
-    static let dbMgr = DbManager(db_path: "WorkoutTracker.sqlite")
-
     static var previews: some View {
         WorkoutHistoryView(workouts: .constant([MockData.workoutHistory1, MockData.workoutHistory2, MockData.workoutHistory3]))
-            .environmentObject(dbMgr)
     }
 }
 

@@ -15,7 +15,6 @@ struct ExerciseDropDownTableView: View {
         
     @StateObject private var viewModel = ExerciseDropDownViewModel()
     
-    @EnvironmentObject var dbMgr : DbManager
     @EnvironmentObject private var selectedWkout : Workout
     
     @Binding var repsArr : [TextBindingManager]
@@ -123,7 +122,7 @@ struct ExerciseDropDownTableView: View {
                                     if isRestTimerOn {
                                         restTimeRunning = true  // start the rest time timer
                                         restTimeRemaining = selectedWkout.restTimeSec
-                                        let _ = dbMgr.insertCurrentRestTimerStartTime(restTimeOffset: selectedWkout.restTimeSec)
+                                        let _ = DbManager.shared.insertCurrentRestTimerStartTime(restTimeOffset: selectedWkout.restTimeSec)
                                         
                                         let center = UNUserNotificationCenter.current()
                                         
@@ -205,23 +204,10 @@ struct ExerciseDropDownTableView: View {
                 RoundedRectangle(cornerRadius: 16)
                     .stroke(Color.gray.opacity(0.1), lineWidth: 4)
             )
-        .onAppear {
-            self.viewModel.setup(self.dbMgr)
-//            for set in 0..<exercise.sets {
-//                let prevWgt = viewModel.getPrev(exerciseName: exercise.name,
-//                                                set: set)
-//                entries.append(ExerciseEntry(set: set,
-//                                             prevWgtLbs: prevWgt,
-//                                             wgtLbs: nil,
-//                                             reps: Int(repsArr[set].text) ?? 0,
-//                                             saved: false))
-//            }
-        }
     }
 }
 
 struct ExerciseDropDownTableView_Previews: PreviewProvider {
-    static let dbMgr = DbManager(db_path: "WorkoutTracker.sqlite")
     static var previews: some View {
         ExerciseDropDownTableView(exercise: MockData.sampleExercises[0],
                                   restTime: 60,
@@ -232,7 +218,6 @@ struct ExerciseDropDownTableView_Previews: PreviewProvider {
                                   restTimeRunning: .constant(false),
                                   restTimeRemaining: .constant(60),
                                   isRestTimerOn: false)
-            .environmentObject(dbMgr)
             .environmentObject(MockData.sampleWorkout1)
     }
 }

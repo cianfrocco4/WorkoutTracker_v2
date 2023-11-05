@@ -8,95 +8,78 @@
 import SwiftUI
 
 struct NewWorkoutView: View {
+    @Environment(\.presentationMode) private var presentationMode
+    @EnvironmentObject private var workoutModel : WorkoutModel
+    
     @StateObject private var viewModel = NewWorkoutViewModel()
-    
-    @Binding var isShowingNewWorkout : Bool
-        
-    @EnvironmentObject var dbMgr : DbManager
-    
+                
     var body: some View {
-        ZStack {
-            VStack {
-                HStack {
-                    Text("Workout Name:")
-                    TextField("Workout Name", text: $viewModel.newWorkout.name)
-                        .textFieldStyle(.roundedBorder)
-                        .onSubmit {
-                            viewModel.loadDeletedWorkout()
-                        }
-                }
-                .padding()
-                
-                List (viewModel.newWorkout.exercises) { exercise in
-                    Text(exercise.name)
-                }
-                .frame(maxHeight: 200)
-                
+        VStack {
+            HStack {
+                Text("Workout Name:")
+                TextField("Workout Name", text: $viewModel.newWorkout.name)
+                    .textFieldStyle(.roundedBorder)
+                    .onSubmit {
+                        viewModel.loadDeletedWorkout()
+                    }
+            }
+            .padding()
+            
+            List (viewModel.newWorkout.exercises) { exercise in
+                Text(exercise.name)
+            }
+            .frame(maxHeight: 200)
+            
+            if viewModel.newWorkout.name != "" {
+                NavigationLink(
+                    destination:
+                        NewExerciseView(exercises: $viewModel.newWorkout.exercises,
+                                        swapIdx: .constant(nil),
+                                        saveToDb: false),
+                    label: {
+                        Text("Add new exercise")
+                    })
+                .padding(.bottom)
+            }
+            
+            HStack {
                 Button {
                     if viewModel.newWorkout.name != "" {
-                        viewModel.isShowingNewExer = true
-                    }
-                    else {
-                        print("Workout name must be set to add exercise!")
+                        workoutModel.addNewWorkout(workout: viewModel.newWorkout)
+                        self.presentationMode.wrappedValue.dismiss()
                     }
                 } label: {
-                    Text("Add new exercise")
+                    Text("Save")
+                        .multilineTextAlignment(.center)
+                        .font(.body)
+                        .fontWeight(.semibold)
+                        .frame(width: 130, height: 30)
+                        .foregroundColor(.primary)
+                        .cornerRadius(10)
                 }
-                .padding(.bottom)
+                .background(Color(UIColor.tertiarySystemBackground))
                 
-                HStack {
-                    Button {
-                        if viewModel.newWorkout.name != "" {
-                            viewModel.addNewWorkout()
-                            isShowingNewWorkout = false
-                        }
-                    } label: {
-                        Text("Save")
-                            .multilineTextAlignment(.center)
-                            .font(.body)
-                            .fontWeight(.semibold)
-                            .frame(width: 130, height: 30)
-                            .foregroundColor(.primary)
-                            .cornerRadius(10)
-                    }
-                    .background(Color(UIColor.tertiarySystemBackground))
-                    
-                    Button {
-                        isShowingNewWorkout = false
-                    } label: {
-                        Text("Cancel")
-                            .multilineTextAlignment(.center)
-                            .font(.body)
-                            .fontWeight(.semibold)
-                            .frame(width: 130, height: 30)
-                            .foregroundColor(.primary)
-                            .cornerRadius(10)
-                    }
-                    .background(Color(UIColor.tertiarySystemBackground))
+                Button {
+                    // FUTURE: should add pop up to confirm before canceling
+                    self.presentationMode.wrappedValue.dismiss()
+                } label: {
+                    Text("Cancel")
+                        .multilineTextAlignment(.center)
+                        .font(.body)
+                        .fontWeight(.semibold)
+                        .frame(width: 130, height: 30)
+                        .foregroundColor(.primary)
+                        .cornerRadius(10)
                 }
-                .buttonStyle(.bordered)
+                .background(Color(UIColor.tertiarySystemBackground))
             }
-            .disabled(viewModel.isShowingNewExer)
-            .blur(radius: viewModel.isShowingNewExer ? 20 : 0)
-            
-            if viewModel.isShowingNewExer {
-                NewExerciseView(isShwoingAddNewExer: $viewModel.isShowingNewExer,
-                                isShowingSwapExer: .constant(false),
-                                exercises: $viewModel.newWorkout.exercises,
-                                swapIdx: .constant(nil))
-            }
-        }
-        .onAppear() {
-            self.viewModel.setup(self.dbMgr)
+            .buttonStyle(.bordered)
         }
     }
 }
 
 struct NewWorkoutView_Previews: PreviewProvider {
-    static let dbMgr = DbManager(db_path: "WorkoutTracker.sqlite")
-
     static var previews: some View {
-        NewWorkoutView(isShowingNewWorkout: .constant(true))
-            .environmentObject(dbMgr)
+        NewWorkoutView()
     }
 }

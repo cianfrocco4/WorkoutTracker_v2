@@ -10,28 +10,19 @@ import UserNotifications
 import SwiftUI
 
 final class SettingsViewModel: ObservableObject {
-    var dbMgr : DbManager?
-    
     @Published var exportLoc : String?
     @Published var isNotificationsOn : Bool = false
     
-    func setup(_ dbMgr : DbManager) {
-        self.dbMgr = dbMgr
-    }
-    
     func exportDb() {
-        guard let mgr = self.dbMgr else { return }
-        exportLoc = mgr.exportDb()
+        exportLoc = DbManager.shared.exportDb()
     }
     
     func installDb() {
-        guard let mgr = self.dbMgr else { return }
-        mgr.installNewDb()
+        DbManager.shared.installNewDb()
     }
     
     func updateDb() {
-        guard let mgr = self.dbMgr else { return }
-        mgr.updateDb()
+        DbManager.shared.updateDb()
     }
     
     func requestUserNotificationAuth() {
@@ -46,10 +37,8 @@ final class SettingsViewModel: ObservableObject {
     }
     
     func updateUseSystemBackgroundSetting(val : Bool) {
-        guard let mgr = self.dbMgr else { return }
     }
     
     func updateBackgroundColorSetting(val : ColorScheme) {
-        guard let mgr = self.dbMgr else { return }
     }
 }

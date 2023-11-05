@@ -19,6 +19,7 @@ struct SearchBar: UIViewRepresentable {
         searchBar.placeholder = placeholder
         searchBar.autocapitalizationType = .none
         searchBar.searchBarStyle = .minimal
+        searchBar.searchTextField.enablesReturnKeyAutomatically = false
         return searchBar
     }
 
@@ -40,6 +41,10 @@ struct SearchBar: UIViewRepresentable {
 
         func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
             text = searchText
+        }
+        
+        func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+            searchBar.resignFirstResponder()
         }
     }
 }

@@ -7,18 +7,14 @@
 
 import Foundation
 final class ExerciseListViewModel: ObservableObject {
-    var dbMgr : DbManager?
     @Published var exercises : [String] = []
     
-    func setup(_ dbMgr : DbManager) {
-        self.dbMgr = dbMgr
-        self.exercises = self.dbMgr!.getExercises()
+    func setup() {
+        self.exercises = DbManager.shared.getExercises()
     }
     
     func addNewExercise(name : String) {
-        guard let mgr = dbMgr else { return }
-
-        mgr.addNewExercise(name: name)
-        exercises = mgr.getExercises()
+        DbManager.shared.addNewExercise(name: name)
+        exercises = DbManager.shared.getExercises()
     }
 }

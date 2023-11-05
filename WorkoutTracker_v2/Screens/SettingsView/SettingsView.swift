@@ -9,9 +9,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @StateObject private var viewModel = SettingsViewModel()
-            
-    @EnvironmentObject var dbMgr : DbManager
-    
+                
     @Binding var useSystemBackgroundColor : Bool
     
     @Binding var colorSelection : ColorScheme
@@ -116,18 +114,12 @@ struct SettingsView: View {
             }
             .navigationTitle("Settings ⚙️")
         }
-        .onAppear() {
-            viewModel.setup(dbMgr)
-        }
     }
 }
 
 struct SettingsView_Previews: PreviewProvider {
-    static let dbMgr = DbManager(db_path: "WorkoutTracker.sqlite")
-
     static var previews: some View {
         SettingsView(useSystemBackgroundColor: .constant(true),
                      colorSelection: .constant(.dark))
-            .environmentObject(dbMgr)
     }
 }

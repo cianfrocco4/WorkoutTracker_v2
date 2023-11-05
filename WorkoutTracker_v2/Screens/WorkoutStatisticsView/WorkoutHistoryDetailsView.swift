@@ -11,16 +11,13 @@ struct WorkoutHistoryDetailsView: View {
     @State var wkoutHistory : Workout
     
     @Binding var isShowingWorkoutHistoryDetails : Bool
-    
-    @EnvironmentObject var dbMgr : DbManager
-    
+        
     var body: some View {
         VStack {
             Text("\(wkoutHistory.name)")
                 .font(.title3)
             Button {
                 print("Deleting workout history")
-//                dbMgr.deleteWorkoutHistory(wkoutHistory.name)
             } label: {
                 Text("Delete")
                     .multilineTextAlignment(.center)
@@ -54,10 +51,8 @@ struct WorkoutHistoryDetailsView: View {
 }
 
 struct WorkoutHistoryDetailsView_Previews: PreviewProvider {
-    static let dbMgr = DbManager(db_path: "WorkoutTracker.sqlite")
     static var previews: some View {
         WorkoutHistoryDetailsView(wkoutHistory: MockData.sampleWorkout1,
                                   isShowingWorkoutHistoryDetails: .constant(true))
-            .environmentObject(dbMgr)
     }
 }
