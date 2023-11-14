@@ -9,14 +9,11 @@ import SwiftUI
 
 struct WorkoutControlsView: View {
     @EnvironmentObject private var selectedWkout : Workout
+    @EnvironmentObject private var workoutModel : WorkoutModel
     
     @StateObject private var viewModel = WorkoutControlsViewModel()
-    
-    @State private var restTime : UInt = 60
-    
+        
     @Binding var restTimerRunning : Bool
-    @Binding var workoutTime : Double
-    @Binding var workoutTimerRunning : Bool
     @Binding var isRestTimerOn : Bool
     
     var body: some View {
@@ -24,26 +21,27 @@ struct WorkoutControlsView: View {
             VStack {
                 HStack {
                     Button {
-                        workoutTimerRunning = !workoutTimerRunning
+                        workoutModel.toggleWorkoutRunning()
                         viewModel.workoutStartTime = Date()
-                        DbManager.shared.setSelectedWorkout(workoutName: workoutTimerRunning ? self.selectedWkout.name : "",
-                                                 isTimerOn: workoutTimerRunning)
+                        DbManager.shared.setSelectedWorkout(
+                            workoutName: workoutModel.isWorkoutRunning() ?
+                                self.selectedWkout.name :
+                                "",
+                            isTimerOn: workoutModel.isWorkoutRunning())
                     } label: {
-                        Text(workoutTimerRunning ? "Stop Workout" : "Start Workout")
+                        Text(workoutModel.isWorkoutRunning() ? "Stop Workout" : "Start Workout")
                             .foregroundColor(.primary)
                     }
                     .multilineTextAlignment(.leading)
                     .frame(maxWidth: 150)
                     .padding(6)
-                    .background(RoundedRectangle(cornerRadius: 10).fill( workoutTimerRunning ?  Color.red.opacity(0.5) : Color.green.opacity(0.5)))
+                    .background(RoundedRectangle(cornerRadius: 10).fill( workoutModel.isWorkoutRunning() ?  Color.red.opacity(0.5) : Color.green.opacity(0.5)))
                     .keyboardType(.numberPad)
                     .font(.headline)
                     .fontWeight(.semibold)
                     .foregroundColor(.primary)
                     
-                    IncrementingTimerView(isTimerRunning: workoutTimerRunning,
-                                          timeMs: $workoutTime,
-                                          startTime: viewModel.workoutStartTime)
+                    IncrementingTimerView()
                     
                     Spacer()
                 }
@@ -53,10 +51,10 @@ struct WorkoutControlsView: View {
             HStack {
                 Text("Rest time:")
                     .font(.title3)
-                TextField("RestTime", value: $restTime, format: .number)
-                    .onChange(of: restTime) {
+                TextField("RestTime", value: $selectedWkout.restTimeSec, format: .number)
+                    .onChange(of: selectedWkout.restTimeSec) {
                         print("Rest time changed to: " + String($0))
-                        restTime = $0
+//                        restTime = $0
                         selectedWkout.restTimeSec = $0
                         viewModel.saveWorkout(workout: selectedWkout)
                     }
@@ -106,7 +104,6 @@ struct WorkoutControlsView: View {
             let selectedWkoutOpt = viewModel.getSelectedWorkout()
             if(selectedWkoutOpt != nil) {
                 viewModel.workoutStartTime = selectedWkoutOpt!.1
-                workoutTimerRunning = selectedWkoutOpt!.2
             }
         }
     }
@@ -117,8 +114,6 @@ struct WorkoutControlsView_Previews: PreviewProvider {
 
     static var previews: some View {
         WorkoutControlsView(restTimerRunning: .constant(true),
-                            workoutTime: .constant(0),
-                            workoutTimerRunning: .constant(true),
                             isRestTimerOn: .constant(true))
         .environmentObject(wkout)
     }

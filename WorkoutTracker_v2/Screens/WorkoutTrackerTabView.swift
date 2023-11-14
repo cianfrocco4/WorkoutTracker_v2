@@ -17,6 +17,19 @@ struct WorkoutTrackerTabView: View {
                         return nil
                     }
                     return name
+                }(),
+            runningWorkoutName: {
+                    guard let wkout = DbManager.shared.getSelectedWorkout(forDate: Date()) else {
+                        return nil
+                    }
+                    return wkout.2 ? wkout.0 : nil
+                }(),
+            runningWorkoutTimeSec: 0,
+            runningWorkoutStartDate: {
+                    guard let wkout = DbManager.shared.getSelectedWorkout(forDate: Date()) else {
+                        return nil
+                    }
+                    return wkout.2 ? wkout.1 : nil
                 }())
     
     // default to workouts tab

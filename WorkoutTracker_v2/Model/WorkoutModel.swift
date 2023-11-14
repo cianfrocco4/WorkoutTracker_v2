@@ -11,15 +11,27 @@ class WorkoutModel : ObservableObject {
     @Published var workouts : [Workout]
     @Published var historicalWorkouts : [WorkoutHistory]
     @Published var selectedWorkoutName : String?
+    /** Name of the workout that is currently running. */
+    @Published var runningWorkoutName : String?
+    /** State datetime of the running workout. */
+    @Published var runningWorkoutStartDate : Date?
+    /** Time the workout has been running. */
+    @Published var runningWorkoutTimeSec : Double
     
     init(
         workouts : [Workout],
         historicalWorkouts : [WorkoutHistory],
-        selectedWorkoutName : String?)
+        selectedWorkoutName : String?,
+        runningWorkoutName : String?,
+        runningWorkoutTimeSec : Double,
+        runningWorkoutStartDate : Date?)
     {
         self.workouts = workouts
         self.historicalWorkouts = historicalWorkouts
         self.selectedWorkoutName = selectedWorkoutName
+        self.runningWorkoutName = runningWorkoutName
+        self.runningWorkoutTimeSec = runningWorkoutTimeSec
+        self.runningWorkoutStartDate = runningWorkoutStartDate
     }
     
     func setWorkouts(workouts : [Workout]) -> Void {
@@ -53,5 +65,18 @@ class WorkoutModel : ObservableObject {
     func addNewWorkout(workout : Workout) -> Void {
         DbManager.shared.addNewWorkout(newWorkout: workout)
         refreshWorkoutsFromDb()
+    }
+    
+    func toggleWorkoutRunning() -> Void {
+        runningWorkoutTimeSec = 0
+        runningWorkoutStartDate = Date()
+        runningWorkoutName =
+            runningWorkoutName == nil ?
+                selectedWorkoutName :
+                nil
+    }
+    
+    func isWorkoutRunning() -> Bool {
+        return runningWorkoutName != nil
     }
 }

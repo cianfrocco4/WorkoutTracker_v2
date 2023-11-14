@@ -204,7 +204,7 @@ class DbManager {
     
     func updateWorkoutRestTime(workoutName: String,
                                restTimeSec : UInt) {
-        var queryStr = "UPDATE WorkoutDetails SET restTimeUSec = " + String(restTimeSec * 1000000) +
+        let queryStr = "UPDATE WorkoutDetails SET restTimeUSec = " + String(restTimeSec * 1000000) +
         " WHERE workoutName = '" + workoutName + "'"
         var stmt: OpaquePointer?
         
@@ -427,7 +427,7 @@ class DbManager {
         if(isDbOpen) {
             let queryStr = "INSERT INTO WorkoutDetails (workoutName, exerciseName, numSets, minReps, maxReps) VALUES ('" +
                 workout.name + "', '" + exercise.name + "', '" + String(exercise.sets) + "', '" + String(exercise.minReps) +
-                "', '" + String(exercise.maxReps) + "')"
+            "', '" + String(exercise.maxReps) + "')"
             
             var stmt: OpaquePointer?
 

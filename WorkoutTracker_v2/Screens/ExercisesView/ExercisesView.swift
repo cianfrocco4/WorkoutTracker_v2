@@ -11,14 +11,19 @@ struct ExercisesView: View {
     @State var exercises : [Exercise]
     
     @EnvironmentObject private var selectedWkout : Workout
+    @EnvironmentObject private var workoutModel : WorkoutModel
     
     @StateObject private var viewModel = ExercisesViewModel()
     
-    @State var restTime : UInt
+//    @State var restTime : UInt
     @Binding var restTimeRemaining : UInt
     @Binding var restTimeRunning : Bool
     var isRestTimerOn : Bool
-    var isWorkoutTimerRunning: Bool
+    
+    @ViewBuilder
+    var selectedExerciseDestination : some View {
+        Text("test")
+    }
         
     var body: some View {
         ZStack {
@@ -68,36 +73,37 @@ struct ExercisesView: View {
                             .buttonStyle(.bordered)
                             .cornerRadius(10)
                             .swipeActions {
-                                Button("Swap") {
-                                    // Temporary swap
-                                    
-                                    print("Swap exercise: " + exercise.name)
-                                    
-                                    let idx = exercises.firstIndex(where: { $0.name == exercise.name })
-                                    
-                                    if (idx != nil) {
-                                        viewModel.swapIdx = idx!
-                                        NavigationLink(
-                                            destination:
-                                                NewExerciseView(exercises: $exercises,
-                                                                swapIdx: $viewModel.swapIdx,
-                                                                selectedWkout: selectedWkout, 
-                                                                saveToDb: true)
-                                                .navigationTitle("New Exercise"),
-                                            label: {
-                                                Text("Add new exercise")
-                                                    .multilineTextAlignment(.center)
-                                                    .font(.body)
-                                                    .fontWeight(.semibold)
-                                                    .cornerRadius(10)
-                                            }
-                                        )
-                                        .padding()
-                                        .buttonStyle(.borderedProminent)
-                                        .tint(Color.brandPrimary)
-                                    }
-                                }
-                                .tint(.yellow)
+                                // TODO: removing swap for now
+//                                Button("Swap") {
+//                                    // Temporary swap
+//                                    
+//                                    print("Swap exercise: " + exercise.name)
+//                                    
+//                                    let idx = exercises.firstIndex(where: { $0.name == exercise.name })
+//                                    
+//                                    if (idx != nil) {
+//                                        viewModel.swapIdx = idx!
+//                                        NavigationLink(
+//                                            destination:
+//                                                NewExerciseView(exercises: $exercises,
+//                                                                swapIdx: $viewModel.swapIdx,
+//                                                                selectedWkout: selectedWkout, 
+//                                                                saveToDb: true)
+//                                                .navigationTitle("New Exercise"),
+//                                            label: {
+//                                                Text("Add new exercise")
+//                                                    .multilineTextAlignment(.center)
+//                                                    .font(.body)
+//                                                    .fontWeight(.semibold)
+//                                                    .cornerRadius(10)
+//                                            }
+//                                        )
+//                                        .padding()
+//                                        .buttonStyle(.borderedProminent)
+//                                        .tint(Color.brandPrimary)
+//                                    }
+//                                }
+//                                .tint(.yellow)
                                 
                                 Button("Remove") {
                                     print("Remove exercise: " + exercise.name)
@@ -118,7 +124,7 @@ struct ExercisesView: View {
                                 viewModel.selectedExercise!.id == exercise.id {
                                 
                                 ExerciseDropDownTableView(exercise: viewModel.selectedExercise!,
-                                                          restTime: restTime,
+                                                          restTime: selectedWkout.restTimeSec,
                                                           repsArr: $viewModel.repsArr,
                                                           weightArr: $viewModel.weightArr,
                                                           entries: $viewModel.exerciseEntries,
@@ -126,11 +132,11 @@ struct ExercisesView: View {
                                                           restTimeRunning: $restTimeRunning,
                                                           restTimeRemaining: $restTimeRemaining,
                                                           isRestTimerOn: isRestTimerOn)
+                                .disabled(!workoutModel.isWorkoutRunning())
                             }
                         }
                     }
                     .onMove(perform: move)
-                    .disabled(!isWorkoutTimerRunning)
                     
                     HStack {
                         Spacer()
@@ -171,11 +177,10 @@ struct ExercisesView: View {
 struct ExercisesView_Previews: PreviewProvider {
     static var previews: some View {
         ExercisesView(exercises: MockData.sampleExercises,
-                      restTime: 60,
+//                      restTime: 60,
                       restTimeRemaining: .constant(60),
                       restTimeRunning: .constant(false),
-                      isRestTimerOn: false,
-                      isWorkoutTimerRunning: true)
+                      isRestTimerOn: false)
             .environmentObject(MockData.sampleWorkout1)
     }
 }

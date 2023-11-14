@@ -17,6 +17,7 @@ struct NewExerciseView: View {
         case eeNumSets
         case eeMinNumReps
         case eeMaxNumReps
+        case eeRestTime
     }
     
     @Environment(\.presentationMode) var presentation
@@ -37,6 +38,8 @@ struct NewExerciseView: View {
     
     var selectedWkout : Workout?
     var saveToDb : Bool
+    
+    private let MAX_REST_TIME_SEC = 600
     
     var filteredExercises: [String] {
         allExerciseNames.filter {

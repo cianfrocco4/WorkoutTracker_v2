@@ -15,12 +15,10 @@ func formatMmSsMl(counter: Double) -> String {
 }
 
 struct IncrementingTimerView: View {
-    var isTimerRunning : Bool
-    @Binding var timeMs : Double
+    @EnvironmentObject private var workoutModel : WorkoutModel
     
     let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
     
-    var startTime : Date
     @State var interval = TimeInterval()
     
     @State var formatter: DateComponentsFormatter = {
@@ -37,8 +35,8 @@ struct IncrementingTimerView: View {
                 .padding(6)
                 .background(RoundedRectangle(cornerRadius: 10).fill( Color(UIColor.secondarySystemBackground)))
                 .onReceive(timer) { _ in
-                    if self.isTimerRunning {
-                        interval = Date().timeIntervalSince(startTime)
+                    if workoutModel.isWorkoutRunning() {
+                        interval = Date().timeIntervalSince(workoutModel.runningWorkoutStartDate!)
                     }
                 }
         }
@@ -47,8 +45,6 @@ struct IncrementingTimerView: View {
 
 struct IncrementingTimerView_Previews: PreviewProvider {
     static var previews: some View {
-        IncrementingTimerView(isTimerRunning: true,
-                              timeMs: .constant(0),
-                              startTime: Date())
+        IncrementingTimerView()
     }
 }

@@ -16,23 +16,18 @@ struct WorkoutView: View {
     @State private var restTime : UInt = 60
     @State private var restTimerRunning = false
     @State private var restTimeRemaining : UInt = 60
-    @State private var workoutTime : Double = 0
-    @State private var workoutTimerRunning : Bool = false
     @State private var isRestTimerOn : Bool = false
     
     var body: some View {
         VStack {
             WorkoutControlsView(restTimerRunning: $restTimerRunning,
-                                workoutTime: $workoutTime,
-                                workoutTimerRunning: $workoutTimerRunning,
                                 isRestTimerOn: $isRestTimerOn)
             
             ExercisesView(exercises: selectedWkout.exercises,
-                          restTime : restTime,
+//                          restTime : selectedWkout.restTimeSec,
                           restTimeRemaining: $restTimeRemaining,
                           restTimeRunning: $restTimerRunning,
-                          isRestTimerOn: isRestTimerOn,
-                          isWorkoutTimerRunning: workoutTimerRunning)
+                          isRestTimerOn: isRestTimerOn)
         }
         .padding(.top)
         .onAppear() {

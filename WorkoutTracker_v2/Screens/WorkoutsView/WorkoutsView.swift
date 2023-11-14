@@ -25,7 +25,10 @@ struct WorkoutsView: View {
                                 destination:
                                     WorkoutView()
                                     .environmentObject(workout)
-                                    .navigationTitle(workout.name),
+                                    .navigationTitle(workout.name)
+                                    .onAppear() {
+                                        workoutModel.setSelectedWorkout(workoutName: workout.name)
+                                    },
                                 label: {
                                     HStack {
                                         if workout.active {
