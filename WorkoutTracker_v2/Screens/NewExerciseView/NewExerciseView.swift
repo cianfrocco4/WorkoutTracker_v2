@@ -214,6 +214,5 @@ struct NewExerciseView_Previews: PreviewProvider {
                         swapIdx: .constant(nil), 
                         selectedWkout: MockData.sampleWorkout1,
                         saveToDb: true)
-        .environmentObject(MockData.sampleWorkout1)
     }
 }

@@ -125,7 +125,8 @@ struct ExercisesView: View {
                                 viewModel.selectedExercise!.id == exercise.id {
                                 
                                 ExerciseDropDownTableView(exercise: viewModel.selectedExercise!,
-                                                          restTime: selectedWkout.restTimeSec,
+                                                          restTime: selectedWkout.restTimeSec, 
+                                                          selectedWkout: $selectedWkout,
                                                           repsArr: $viewModel.repsArr,
                                                           weightArr: $viewModel.weightArr,
                                                           entries: $viewModel.exerciseEntries,
@@ -182,7 +183,6 @@ struct ExercisesView_Previews: PreviewProvider {
                       restTimeRemaining: .constant(60),
                       restTimeRunning: .constant(false),
                       isRestTimerOn: false)
-            .environmentObject(MockData.sampleWorkout1)
     }
 }
 

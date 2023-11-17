@@ -15,8 +15,7 @@ struct ExerciseDropDownTableView: View {
         
     @StateObject private var viewModel = ExerciseDropDownViewModel()
     
-    @EnvironmentObject private var selectedWkout : Workout
-    
+    @Binding var selectedWkout : Workout
     @Binding var repsArr : [TextBindingManager]
     @Binding var weightArr : [TextBindingManager]
     @Binding var entries : [ExerciseEntry]
@@ -210,7 +209,8 @@ struct ExerciseDropDownTableView: View {
 struct ExerciseDropDownTableView_Previews: PreviewProvider {
     static var previews: some View {
         ExerciseDropDownTableView(exercise: MockData.sampleExercises[0],
-                                  restTime: 60,
+                                  restTime: 60, 
+                                  selectedWkout: .constant(MockData.sampleWorkout1),
                                   repsArr: .constant(MockData.sampleRepsWeightArr),
                                   weightArr: .constant(MockData.sampleRepsWeightArr),
                                   entries: .constant(MockData.sampleEntries),
@@ -218,7 +218,6 @@ struct ExerciseDropDownTableView_Previews: PreviewProvider {
                                   restTimeRunning: .constant(false),
                                   restTimeRemaining: .constant(60),
                                   isRestTimerOn: false)
-            .environmentObject(MockData.sampleWorkout1)
     }
 }
 

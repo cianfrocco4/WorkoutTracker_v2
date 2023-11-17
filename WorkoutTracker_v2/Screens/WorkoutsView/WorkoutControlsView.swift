@@ -116,6 +116,5 @@ struct WorkoutControlsView_Previews: PreviewProvider {
         WorkoutControlsView(selectedWkout: .constant(MockData.sampleWorkout1),
                             restTimerRunning: .constant(true),
                             isRestTimerOn: .constant(true))
-        .environmentObject(wkout)
     }
 }
