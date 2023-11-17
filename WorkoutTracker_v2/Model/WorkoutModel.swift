@@ -7,9 +7,15 @@
 
 import Foundation
 
+/**
+ * The model for all current and historical workouts.
+ */
 class WorkoutModel : ObservableObject {
+    /** The list of current workouts. */
     @Published var workouts : [Workout]
+    /** The list of historiical workouts. */
     @Published var historicalWorkouts : [WorkoutHistory]
+    /** The selected workout name, or nil if there isn't one. */
     @Published var selectedWorkoutName : String?
     /** Name of the workout that is currently running. */
     @Published var runningWorkoutName : String?
@@ -34,23 +40,59 @@ class WorkoutModel : ObservableObject {
         self.runningWorkoutStartDate = runningWorkoutStartDate
     }
     
+    /**
+     * Set the workouts.
+     *
+     * @param workouts: the new workouts.
+     * @return None.
+     */
     func setWorkouts(workouts : [Workout]) -> Void {
         self.workouts = workouts
     }
     
+    /**
+     * Refresh the workout from the database.
+     *
+     * @return None.
+     */
     func refreshWorkoutsFromDb() -> Void {
         setWorkouts(workouts: DbManager.shared.getWorkouts())
     }
     
+    /**
+     * @return true if a workout is selected, false otherwise.
+     */
     func isWorkoutSelected() -> Bool {
         return selectedWorkoutName != nil
     }
     
-    func setSelectedWorkout(workoutName : String?) {
+    /**
+     * Set the selected workout.
+     *
+     *@param workoutName the  workout name to set as selected or nil if none selected.
+     *@return None.
+     */
+    func setSelectedWorkout(workoutName : String?) -> Void {
         // should we check that the workoutName is a valid one???
         selectedWorkoutName = workoutName
     }
     
+    /**
+     * @return the selected workout or nil if there isn't one.
+     */
+    func getSelectedWorkout() -> Workout? {
+        guard let name = selectedWorkoutName else { return nil }
+        guard let wkout = workouts.first(where: { w in return w.name == name}) else {
+            return nil }
+        return wkout
+    }
+    
+    /**
+     * Remove a workout from both the workout list and database.
+     *
+     *@param workoutName the name of the workout to remove.
+     *@return None.
+     */
     func removeWorkout(workoutName : String) -> Void {
         if(workouts.contains(
             where: { wkout in
@@ -62,11 +104,39 @@ class WorkoutModel : ObservableObject {
         }
     }
     
+    func removeExercise(
+        workoutName : String,
+        exerciseName : String) {
+            guard let wkout = workouts.first(where: { w in return w.name == workoutName}) else {
+                print("Can't remove exercise, workout doesn't exist: \(workoutName)")
+                return
+            }
+            
+            guard let exer = wkout.exercises.first(where: { e in return e.name == exerciseName }) else {
+                print("Can't remove exercise (\(exerciseName)) from workout workout (\(exerciseName))")
+                return
+            }
+            
+            DbManager.shared.removeExerciseFromWorkout(workout: wkout, exercise: exer)
+            refreshWorkoutsFromDb()
+        }
+    
+    /**
+     * Add a new workout.
+     *
+     *@param workout the new workout. This workout *must* have a unique name.
+     *@return None.
+     */
     func addNewWorkout(workout : Workout) -> Void {
         DbManager.shared.addNewWorkout(newWorkout: workout)
         refreshWorkoutsFromDb()
     }
     
+    /**
+     * Toggle workout running flag and time.
+     *
+     *@return None.
+     */
     func toggleWorkoutRunning() -> Void {
         runningWorkoutTimeSec = 0
         runningWorkoutStartDate = Date()
@@ -76,6 +146,9 @@ class WorkoutModel : ObservableObject {
                 nil
     }
     
+    /**
+     * @return true if a workout is currently running, false otherwise.
+     */
     func isWorkoutRunning() -> Bool {
         return runningWorkoutName != nil
     }

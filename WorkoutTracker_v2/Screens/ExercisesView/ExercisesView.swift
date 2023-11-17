@@ -8,16 +8,14 @@
 import SwiftUI
 
 struct ExercisesView: View {
-    @State var exercises : [Exercise]
-    
-    @EnvironmentObject private var selectedWkout : Workout
     @EnvironmentObject private var workoutModel : WorkoutModel
     
     @StateObject private var viewModel = ExercisesViewModel()
     
-//    @State var restTime : UInt
+    @Binding var selectedWkout : Workout
     @Binding var restTimeRemaining : UInt
     @Binding var restTimeRunning : Bool
+
     var isRestTimerOn : Bool
     
     @ViewBuilder
@@ -29,7 +27,7 @@ struct ExercisesView: View {
         ZStack {
             VStack {
                 List {
-                    ForEach(exercises) { exercise in
+                    ForEach(selectedWkout.exercises) { exercise in
                         VStack {
                             Button {
                                 print("Exercise selected: \(exercise)")
@@ -74,48 +72,51 @@ struct ExercisesView: View {
                             .cornerRadius(10)
                             .swipeActions {
                                 // TODO: removing swap for now
-//                                Button("Swap") {
-//                                    // Temporary swap
-//                                    
-//                                    print("Swap exercise: " + exercise.name)
-//                                    
-//                                    let idx = exercises.firstIndex(where: { $0.name == exercise.name })
-//                                    
-//                                    if (idx != nil) {
-//                                        viewModel.swapIdx = idx!
-//                                        NavigationLink(
-//                                            destination:
-//                                                NewExerciseView(exercises: $exercises,
-//                                                                swapIdx: $viewModel.swapIdx,
-//                                                                selectedWkout: selectedWkout, 
-//                                                                saveToDb: true)
-//                                                .navigationTitle("New Exercise"),
-//                                            label: {
-//                                                Text("Add new exercise")
-//                                                    .multilineTextAlignment(.center)
-//                                                    .font(.body)
-//                                                    .fontWeight(.semibold)
-//                                                    .cornerRadius(10)
-//                                            }
-//                                        )
-//                                        .padding()
-//                                        .buttonStyle(.borderedProminent)
-//                                        .tint(Color.brandPrimary)
-//                                    }
-//                                }
-//                                .tint(.yellow)
+                                //                                Button("Swap") {
+                                //                                    // Temporary swap
+                                //
+                                //                                    print("Swap exercise: " + exercise.name)
+                                //
+                                //                                    let idx = exercises.firstIndex(where: { $0.name == exercise.name })
+                                //
+                                //                                    if (idx != nil) {
+                                //                                        viewModel.swapIdx = idx!
+                                //                                        NavigationLink(
+                                //                                            destination:
+                                //                                                NewExerciseView(exercises: $exercises,
+                                //                                                                swapIdx: $viewModel.swapIdx,
+                                //                                                                selectedWkout: selectedWkout,
+                                //                                                                saveToDb: true)
+                                //                                                .navigationTitle("New Exercise"),
+                                //                                            label: {
+                                //                                                Text("Add new exercise")
+                                //                                                    .multilineTextAlignment(.center)
+                                //                                                    .font(.body)
+                                //                                                    .fontWeight(.semibold)
+                                //                                                    .cornerRadius(10)
+                                //                                            }
+                                //                                        )
+                                //                                        .padding()
+                                //                                        .buttonStyle(.borderedProminent)
+                                //                                        .tint(Color.brandPrimary)
+                                //                                    }
+                                //                                }
+                                //                                .tint(.yellow)
                                 
                                 Button("Remove") {
                                     print("Remove exercise: " + exercise.name)
+                                    workoutModel.removeExercise(
+                                        workoutName: selectedWkout.name,
+                                        exerciseName: exercise.name)
                                     
-                                    let idx = exercises.firstIndex(where: { $0.name == exercise.name })
-                                    
-                                    if (idx != nil) {
-                                        // Remove from database
-                                        viewModel.removeExercise(exercise: exercises[idx!])
-                                        // Remove locally
-                                        exercises.remove(at: idx!)
-                                    }
+//                                    let idx = selectedWkout.exercises.firstIndex(where: { $0.name == exercise.name })
+//                                    
+//                                    if (idx != nil) {
+//                                        // Remove from database
+//                                        viewModel.removeExercise(exercise: selectedWkout.exercises[idx!])
+//                                        // Remove locally
+//                                        selectedWkout.exercises.remove(at: idx!)
+//                                    }
                                 }
                                 .tint(.red)
                             }
@@ -142,9 +143,9 @@ struct ExercisesView: View {
                         Spacer()
                         NavigationLink(
                             destination:
-                                NewExerciseView(exercises: $exercises,
+                                NewExerciseView(exercises: $selectedWkout.exercises,
                                                 swapIdx: $viewModel.swapIdx,
-                                                selectedWkout: selectedWkout, 
+                                                selectedWkout: selectedWkout,
                                                 saveToDb: true)
                                 .navigationTitle("New Exercise"),
                             label: {
@@ -165,19 +166,19 @@ struct ExercisesView: View {
             }
         }
         .onAppear {
-            self.viewModel.setup(workout: selectedWkout) // workout)
+            self.viewModel.setup(workout: selectedWkout)
         }
     }
     
     func move(from source: IndexSet, to destination: Int) {
-        exercises.move(fromOffsets: source, toOffset: destination)
+        selectedWkout.exercises.move(fromOffsets: source, toOffset: destination)
     }
 }
 
 struct ExercisesView_Previews: PreviewProvider {
     static var previews: some View {
-        ExercisesView(exercises: MockData.sampleExercises,
-//                      restTime: 60,
+        ExercisesView(
+            selectedWkout: .constant(MockData.sampleWorkout1),
                       restTimeRemaining: .constant(60),
                       restTimeRunning: .constant(false),
                       isRestTimerOn: false)

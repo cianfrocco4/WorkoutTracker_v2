@@ -23,8 +23,7 @@ struct WorkoutsView: View {
                         ForEach($workoutModel.workouts) { $workout in
                             NavigationLink(
                                 destination:
-                                    WorkoutView()
-                                    .environmentObject(workout)
+                                    WorkoutView(selectedWkout: $workout)
                                     .navigationTitle(workout.name)
                                     .onAppear() {
                                         workoutModel.setSelectedWorkout(workoutName: workout.name)

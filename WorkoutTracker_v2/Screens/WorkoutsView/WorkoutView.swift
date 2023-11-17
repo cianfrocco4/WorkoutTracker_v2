@@ -9,10 +9,12 @@ import SwiftUI
 import UserNotifications
 
 struct WorkoutView: View {
-    @EnvironmentObject private var selectedWkout : Workout
+    @EnvironmentObject private var workoutModel : WorkoutModel
     
     @StateObject private var viewModel = WorkoutViewModel()
-        
+    
+    @Binding var selectedWkout : Workout
+    
     @State private var restTime : UInt = 60
     @State private var restTimerRunning = false
     @State private var restTimeRemaining : UInt = 60
@@ -20,14 +22,22 @@ struct WorkoutView: View {
     
     var body: some View {
         VStack {
-            WorkoutControlsView(restTimerRunning: $restTimerRunning,
-                                isRestTimerOn: $isRestTimerOn)
-            
-            ExercisesView(exercises: selectedWkout.exercises,
-//                          restTime : selectedWkout.restTimeSec,
-                          restTimeRemaining: $restTimeRemaining,
-                          restTimeRunning: $restTimerRunning,
-                          isRestTimerOn: isRestTimerOn)
+            if workoutModel.isWorkoutSelected() &&
+                workoutModel.getSelectedWorkout() != nil {
+                WorkoutControlsView(
+                    selectedWkout: $selectedWkout,
+                    restTimerRunning: $restTimerRunning,
+                    isRestTimerOn: $isRestTimerOn)
+                
+                ExercisesView(
+                    selectedWkout: $selectedWkout,
+                    restTimeRemaining: $restTimeRemaining,
+                    restTimeRunning: $restTimerRunning,
+                    isRestTimerOn: isRestTimerOn)
+            }
+            else {
+                Text("Error: no workout is selected.")
+            }
         }
         .padding(.top)
         .onAppear() {
@@ -42,7 +52,7 @@ struct WorkoutView: View {
                 }
             }
             
-            restTime = selectedWkout.restTimeSec
+            restTime = workoutModel.getSelectedWorkout()?.restTimeSec ?? 60
             isRestTimerOn = DbManager.shared.getRestTimerEnabled() ?? false
         }
     }
@@ -51,7 +61,6 @@ struct WorkoutView: View {
 struct WorkoutView_Previews: PreviewProvider {
     static let wkout = MockData.sampleWorkout1
     static var previews: some View {
-        WorkoutView()
-            .environmentObject(wkout)
+        WorkoutView(selectedWkout: .constant(MockData.sampleWorkout1))
     }
 }

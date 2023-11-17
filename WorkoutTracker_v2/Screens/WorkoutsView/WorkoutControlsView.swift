@@ -8,11 +8,11 @@
 import SwiftUI
 
 struct WorkoutControlsView: View {
-    @EnvironmentObject private var selectedWkout : Workout
     @EnvironmentObject private var workoutModel : WorkoutModel
     
     @StateObject private var viewModel = WorkoutControlsViewModel()
         
+    @Binding var selectedWkout : Workout
     @Binding var restTimerRunning : Bool
     @Binding var isRestTimerOn : Bool
     
@@ -113,7 +113,8 @@ struct WorkoutControlsView_Previews: PreviewProvider {
     static let wkout = MockData.sampleWorkout1
 
     static var previews: some View {
-        WorkoutControlsView(restTimerRunning: .constant(true),
+        WorkoutControlsView(selectedWkout: .constant(MockData.sampleWorkout1),
+                            restTimerRunning: .constant(true),
                             isRestTimerOn: .constant(true))
         .environmentObject(wkout)
     }
